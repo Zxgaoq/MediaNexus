@@ -5,7 +5,7 @@
 <h1 align="center">MediaNexus</h1>
 
 <p align="center">
-  <b>NAS 素材同步 + 视频质检</b> 一体化桌面工具<br/>
+  <b>素材同步 + 视频质检</b> 一体化桌面工具<br/>
   <sub>面向影视后期素材生产流程</sub>
 </p>
 
