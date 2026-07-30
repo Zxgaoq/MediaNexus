@@ -42,21 +42,6 @@ _SPIN_DOWN_URL = _SPIN_DOWN_PATH.replace("\\", "/")
 # 同时保证中文用户名路径不出现乱码（使用 Path 而非字符串拼接）。
 # 统一以产品名 "MediaNexus" 为目录名（与安装包品牌一致）。
 CONFIG_DIR = Path(os.environ.get("APPDATA", Path.home())) / "MediaNexus"
-# 旧目录名（历史遗留）：如存在旧配置且新目录尚无 config.json，自动整体迁移一次。
-_OLD_CONFIG_DIR = Path(os.environ.get("APPDATA", Path.home())) / "MediaSync"
-if (
-    _OLD_CONFIG_DIR.is_dir()
-    and (_OLD_CONFIG_DIR / "config.json").exists()
-    and not (CONFIG_DIR / "config.json").exists()
-):
-    try:
-        CONFIG_DIR.mkdir(parents=True, exist_ok=True)
-        for _f in _OLD_CONFIG_DIR.iterdir():
-            if _f.is_file():
-                _f.replace(CONFIG_DIR / _f.name)
-    except OSError:
-        # 迁移失败不阻塞：回退继续使用旧目录，避免丢配置
-        CONFIG_DIR = _OLD_CONFIG_DIR
 CONFIG_DIR.mkdir(parents=True, exist_ok=True)
 
 CONFIG_FILENAME = "config.json"
