@@ -1,311 +1,167 @@
-# MediaSync — 素材同步与视频质检桌面工具
+<p align="center">
+  <img src="assets/logo.png" alt="MediaSync" width="96" />
+</p>
 
-> **MediaSync = ProjectSync（素材同步）+ VideoQC（视频质检）**
->
-> 一个面向影视素材生产流程的 Windows 桌面应用：
-> - 让本地项目目录与服务器素材目录建立项目级关联
-> - 以三栏界面浏览本地 / 服务器内容并执行复制、移动等操作
-> - 对视频执行黑帧、夹帧、黑边、静音、一致性、多版本对比等 QC 检测
-> - 导出 Excel 检测报告
+<h1 align="center">MediaSync</h1>
 
----
+<p align="center">
+  <b>NAS 素材同步 + 视频质检</b> 一体化桌面工具<br/>
+  <sub>面向影视后期素材生产流程</sub>
+</p>
 
-## 目录
-
-1. [项目概览](#1-项目概览)
-2. [环境要求](#2-环境要求)
-3. [开发启动](#3-开发启动)
-4. [核心能力](#4-核心能力)
-5. [架构与目录](#5-架构与目录)
-6. [配置与数据](#6-配置与数据)
-7. [构建与发布](#7-构建与发布)
-8. [测试与验证](#8-测试与验证)
-9. [常见问题](#9-常见问题)
-10. [开发文档](#10-开发文档)
+<p align="center">
+  <img src="https://img.shields.io/badge/python-3.10%2B-blue" alt="Python" />
+  <img src="https://img.shields.io/badge/platform-Windows%2010%2F11-lightgrey" alt="Platform" />
+  <img src="https://img.shields.io/badge/framework-PySide6-green" alt="Framework" />
+  <img src="https://img.shields.io/badge/version-1.0.0-orange" alt="Version" />
+  <img src="https://img.shields.io/github/last-commit/Zxgaoq/MediaSync" alt="Last Commit" />
+</p>
 
 ---
 
-## 1. 项目概览
-
-| 项目 | 说明 |
-| --- | --- |
-| 产品名 | **MediaSync** |
-| 运行形态 | Windows 桌面应用，基于 **PySide6** |
-| 系统形态 | 单进程、模块化桌面单体 |
-| 主入口 | `run.py`（开发入口） |
-| 打包入口 | `ProjectSync_Studio/main.py` |
-| 主配置 | `%APPDATA%/MediaSync/config.json` |
-| 索引数据库 | `%APPDATA%/MediaSync/nas_index.db` |
-| 分发形态 | PyInstaller **onedir** + Inno Setup 安装器 |
-
-> 当前源码已经统一使用 `%APPDATA%/MediaSync/` 作为运行时配置目录。旧目录 `%APPDATA%/ProjectSyncStudio/` 仅用于兼容迁移，不应再作为新文档或新功能的默认路径。
-
----
-
-## 2. 环境要求
-
-- **操作系统**：Windows 10 / 11
-- **Python**：3.10+
-- **GUI 依赖**：PySide6
-- **视频检测依赖**：OpenCV、NumPy、openpyxl
-- **网络环境**：可访问目标服务器 / NAS 共享目录
-- **FFmpeg**：可使用系统 PATH、手动指定目录、随包内置目录或 `%APPDATA%/MediaSync/ffmpeg/bin`
-
-依赖列表见：`requirements.txt`
-
----
-
-## 3. 开发启动
+## Quick Start
 
 ```bash
+git clone https://github.com/Zxgaoq/MediaSync.git
+cd MediaSync
+
 # 安装依赖
-python -m pip install -r requirements.txt
+pip install -r requirements.txt
 
-# 准备 FFmpeg（二选一）
-# 方式一：运行脚本自动下载
+# 下载 FFmpeg（约 160MB，仓库不含二进制）
 python scripts/fetch_ffmpeg.py
-# 方式二：手动将 ffmpeg.exe / ffprobe.exe 放入 resources/ffmpeg/
 
-# 启动主程序
+# 启动
 python run.py
-
-# 或直接走包入口
-python -m ProjectSync_Studio.main
 ```
 
-> **注意**：`resources/ffmpeg/*.exe` 未纳入版本控制（文件约 95MB），首次克隆后需按上述方式获取。
+> FFmpeg 也可手动放入 `resources/ffmpeg/`，或依赖系统 PATH。不安装 FFmpeg 程序仍可启动，但 QC 检测不可用。
 
-### 启动链路
+---
 
-```text
-run.py
-  -> 安装 crash_handler
-  -> import ProjectSync_Studio.main.main
-  -> 切换工作目录到项目根
-  -> 调用 ProjectSync_Studio.main.main()
+## Features
 
-ProjectSync_Studio.main.main()
-  -> 再次安装 crash_handler
-  -> 调用 ProjectSync_Studio.ui.main_window.run_app()
-  -> 创建 QApplication 并显示主窗口
+### ProjectSync — 素材同步
+
+- **三栏浏览**：项目导航 / 本地目录 / NAS 目录，一目了然
+- **项目关联**：本地项目与 NAS 素材目录建立映射，支持归一化模糊匹配
+- **SQLite 索引**：NAS 目录扫描结果本地缓存，避免重复遍历网络路径
+- **文件操作**：复制、移动、重命名、新建、删除、拖拽
+
+### VideoQC — 视频质检
+
+| 检测项 | 说明 |
+|:---|:---|
+| 黑帧 | 全黑或近黑帧检测，区分硬切转场与异常黑帧 |
+| 黑边 | 画面四周黑边检测（信噪比 + 梯度分析） |
+| 静音 | 音频 RMS 检测，支持多阈值分级（忽略 / 警告 / 错误） |
+| 一致性 | 多文件间的基本属性一致性校验 |
+| 多版本对比 | 跨文件夹版本横向比较 |
+
+- **单次解码复用**：`FrameScanner` 一次解码同时服务所有视觉检测器
+- **Excel 报告导出**：检测结果明细，可直接交付审阅
+
+---
+
+## Project Structure
+
+```
+MediaSync/
+├── run.py                      # 开发入口
+├── ProjectSync_Studio/         # 主程序包（PyInstaller 入口）
+│   ├── constants.py            # 常量与配置
+│   ├── config_manager.py       # 配置单例
+│   ├── indexer.py              # NAS 索引器
+│   ├── matcher.py              # 项目匹配
+│   ├── workers.py              # 后台任务
+│   ├── worker_manager.py       # Worker 生命周期
+│   ├── qc_bridge.py            # QC 窗口桥接
+│   └── ui/                     # 主窗口与各面板
+├── core/                       # QC 核心算法（无 GUI 依赖）
+├── qc_gui/                     # QC 窗口与控件
+├── utils/                      # FFmpeg 管理、导出、存储等
+├── scripts/                    # 工具脚本
+├── assets/                     # 图标与静态资源
+├── docs/                       # 用户文档
+├── dev/                        # 开发手册
+├── installer/                  # Inno Setup 安装器脚本
+├── tests/                      # 冒烟测试
+├── ProjectSync_Studio.spec     # PyInstaller 打包配置
+└── config.json                 # 默认配置
 ```
 
----
+### Module Boundaries
 
-## 4. 核心能力
-
-### 4.1 ProjectSync：素材同步
-
-- 管理本地项目与服务器项目的关联关系
-- 扫描服务器素材根目录并建立本地 SQLite 索引
-- 对项目名做归一化与模糊匹配
-- 通过三栏界面显示：
-  - 左栏：项目导航
-  - 中栏：本地项目目录
-  - 右栏：服务器项目目录
-- 支持复制、移动、重命名、新建、删除、拖拽上传/下载等文件操作
-
-### 4.2 VideoQC：视频质检
-
-- 黑帧检测
-- 夹帧 / 闪帧检测
-- 黑边检测
-- 静音检测
-- 多文件一致性检查
-- 多版本文件夹对比
-- Excel 报告导出
-
-### 4.3 关键实现特点
-
-- **服务器索引缓存**：避免频繁直接遍历 NAS
-- **QThread 后台任务**：避免界面线程阻塞
-- **单次视频解码复用**：`FrameScanner` 一次解码同时服务多个视觉检测器
-- **统一配置源**：主程序与 QC 共用同一份配置与预设
-
----
-
-## 5. 架构与目录
-
-```text
-MediaSync-QC-Studio/
-├── run.py                         # 开发启动器
-├── ProjectSync_Studio/            # 主程序包
-│   ├── main.py                    # PyInstaller 入口
-│   ├── constants.py               # 常量、路径、样式、状态枚举
-│   ├── config_manager.py          # 主配置单例
-│   ├── crash_handler.py           # 崩溃捕获与日志
-│   ├── indexer.py                 # 服务器索引器 NASIndexer
-│   ├── matcher.py                 # 项目匹配逻辑
-│   ├── workers.py                 # 后台线程任务
-│   ├── worker_manager.py          # Worker 生命周期管理
-│   ├── qc_bridge.py               # 打开 QC 窗口 / 多版本对比
-│   └── ui/                        # 主窗口与各面板
-├── core/                          # 无 GUI 依赖的 QC 领域核心
-├── qc_gui/                        # QC 独立窗口与控件
-├── utils/                         # FFmpeg、配置代理、导出、存储等基础设施
-├── scripts/                       # 工具脚本（如 fetch_ffmpeg.py）
-├── resources/ffmpeg/              # FFmpeg 二进制（需手动获取，不入库）
-├── assets/                        # 图标、SVG 等静态资源
-├── docs/                          # 用户文档
-├── dev/                           # 开发文档
-├── installer/                     # Inno Setup 脚本
-├── tests/                         # 冒烟测试
-├── ProjectSync_Studio.spec        # PyInstaller onedir 配置
-└── config.json                    # 示例 / fallback 配置
+```
+ProjectSync_Studio   →  主程序、项目管理、NAS 索引、UI
+core                 →  QC 算法与检测编排（禁止依赖 PySide6）
+qc_gui               →  QC 窗口、结果展示、交互
+utils                →  FFmpeg、导出、存储、配置代理
 ```
 
-### 模块边界
-
-| 模块 | 职责 |
-| --- | --- |
-| `ProjectSync_Studio` | 主程序、项目管理、服务器索引、文件浏览、设置、启动链路 |
-| `core` | 视频 QC 核心算法与检测编排 |
-| `qc_gui` | QC 窗口、结果展示、交互控件 |
-| `utils` | FFmpeg 管理、配置代理、Excel 导出、缓存与文档查看 |
-
-### 边界规则
-
-- `core/` 不应依赖 PySide6
-- UI 层不应直接承载耗时 I/O，必须交给 Worker
-- 主配置唯一权威来源是 `ProjectSync_Studio/config_manager.py`
-- 新增视觉检测优先复用 `FrameScanner`，不要重复全量解码视频
+> `core/` 保持纯 Python，不依赖 PySide6。UI 层不做耗时 I/O，必须交给 Worker。新增视觉检测优先复用 `FrameScanner`。
 
 ---
 
-## 6. 配置与数据
+## Build & Release
 
-### 6.1 主配置
-
-运行时主配置：`%APPDATA%/MediaSync/config.json`
-
-其中主要包含：
-
-- `local_roots`
-- `nas_roots`
-- `projects`
-- `settings`
-- `qc_presets`
-- `qc_active_preset`
-- `qc_settings`
-- `indexed_at`
-
-### 6.2 项目模型要点
-
-当前项目模型以**服务器项目路径**为主要锚点。
-
-配置中的：
-
-- `local_name`：历史字段名，当前更接近**内部唯一键**
-- `name`：展示名称
-- `local_path`：本地目录
-- `confirmed_nas_path`：已确认的服务器目录
-
-> `local_name` 不应再被理解为“本地项目名称”。在服务器优先的工作流里，它通常等于服务器项目路径。
-
-### 6.3 索引与缓存
-
-- `nas_index.db`：服务器目录索引，使用 SQLite WAL
-
-### 6.4 FFmpeg 路径优先级
-
-1. 系统 PATH
-2. 用户手动指定目录
-3. 随包内置 `resources/ffmpeg`
-4. `%APPDATA%/MediaSync/ffmpeg/bin`
-
----
-
-## 7. 构建与发布
-
-### 7.1 PyInstaller
+### PyInstaller
 
 ```bash
 python -m PyInstaller ProjectSync_Studio.spec --clean --noconfirm
 ```
 
-输出目录：
+输出：`dist/MediaSync/`（onedir 分发）
 
-```text
-dist/MediaSync/
-```
-
-这是 **onedir** 分发，不是单文件 exe。
-
-### 7.2 Inno Setup
+### Inno Setup Installer
 
 ```bash
 "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\MediaSync-Setup.iss
 ```
 
-安装器输出：
+输出：`dist/installer/MediaSync-Setup.exe`
 
-```text
-dist/installer/MediaSync-Setup.exe
-```
-
-### 7.3 发布说明
-
-- 安装包不会删除 `%APPDATA%/MediaSync` 下的用户配置和缓存
-- 打包的目标是发布验证，不是日常开发主流程
+> 安装包不删除 `%APPDATA%/MediaSync` 下的用户配置。
 
 ---
 
-## 8. 测试与验证
-
-### 冒烟测试
+## Testing
 
 ```bash
 python -m pytest tests/ -q
 ```
 
-当前 `tests/test_smoke.py` 主要覆盖：
-
-- 版本号契约
-- 默认忽略词
-- 索引器重建与子项读取
-- 并发写稳定性
-- 只读连接隔离
-- matcher 归一化与评分
-- FFmpegManager 接口与手动目录解析
-
-### 建议验证项
+覆盖：版本契约、索引器、并发稳定性、matcher 评分、FFmpeg 管理等。
 
 | 修改范围 | 最低验证 |
-| --- | --- |
-| 配置 / 索引 / 匹配 | 运行 `pytest tests/ -q` |
-| UI 文件操作 | 手动运行 `python run.py` |
-| QC 检测器 | 用样本视频验证黑帧 / 夹帧 / 黑边 / 静音 |
-| 打包逻辑 | 启动 `dist/MediaSync/MediaSync.exe` |
-| 安装器 | 构建并验证安装 / 升级 / 卸载 |
+|:---|:---|
+| 配置 / 索引 / 匹配 | `pytest tests/ -q` |
+| UI / 文件操作 | `python run.py` 手动验证 |
+| QC 检测器 | 样本视频验证黑帧 / 黑边 / 静音 |
+| 打包 | 启动 `dist/MediaSync/MediaSync.exe` |
 
 ---
 
-## 9. 常见问题
+## Configuration
 
-### Q1：为什么 README 和旧认知不一致？
+运行时配置存放于 `%APPDATA%/MediaSync/`：
 
-因为项目已经发生演进，当前应以源码、`ProjectSync_Studio.spec` 和 `dev/DevHandbook.*` 为准。旧描述里常见的过时信息包括：
+| 文件 | 用途 |
+|:---|:---|
+| `config.json` | 主配置（项目列表、预设、设置） |
+| `nas_index.db` | NAS 目录索引（SQLite WAL） |
 
-- 旧配置目录 `%APPDATA%/ProjectSyncStudio`
-- 单文件 exe 分发
-- 误把 `local_name` 当作展示名称
-
-### Q2：QC 检测每次都很慢？
-
-QC 检测当前不使用缓存，每次都是实时执行。如果视频较长，可在设置中调整性能参数（如最大线程数）。确保 FFmpeg 可用且路径正确。
-
-### Q3：为什么不能在子线程里直接创建缩略图图标？
-
-因为 `QPixmap` 必须在主线程创建。当前实现要求子线程只生成 `QImage`，主线程再转换为 `QPixmap/QIcon`。
-
-### Q4：为什么打包后还要看包入口？
-
-因为 PyInstaller 直接使用 `ProjectSync_Studio/main.py` 作为入口，不能只在 `run.py` 里做全局初始化或异常保护。
+FFmpeg 查找优先级：系统 PATH → 用户手动指定 → `resources/ffmpeg/` → `%APPDATA%/MediaSync/ffmpeg/bin`
 
 ---
 
-## 10. 开发文档
+## Documentation
 
-- Markdown 版开发手册：`dev/DevHandbook.md`
+- [开发手册](dev/DevHandbook.md) — 架构细节、模块说明、已知问题
+- [用户手册](docs/MediaSync-Manual.html) — 功能使用指南
 
-如果你是维护者，建议优先阅读开发手册，而不是只依赖 README。
+---
+
+## License
+
+本项目仅供内部工具使用，未开源许可。如需使用请联系作者。
