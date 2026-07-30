@@ -27,5 +27,8 @@ Thumbs.db
 # Tool workspace
 .workbuddy/
 
+# Large binaries
+resources/ffmpeg/*.exe
+
 # Logs
 *.log
