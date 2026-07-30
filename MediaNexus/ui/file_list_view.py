@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-ProjectSync Studio - 文件列表视图（中栏 / 右栏共用）v2 重写版
+MediaNexus - 文件列表视图（中栏 / 右栏共用）v2 重写版
 
 v1 用 QListView + 自定义表头子控件 + 手动几何同步, 6 轮补丁仍死循环。
 v2 改用 QTreeView 原生多列: 列头/列宽/滚动/末列填充全交 Qt, 零手动几何管理,

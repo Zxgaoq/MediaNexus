@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-ProjectSync Studio - 通用小组件
+MediaNexus - 通用小组件
   * SpinnerLabel：纯文本旋转加载动画（无外部图片依赖），用于 NAS 访问等待。
 """
 from __future__ import annotations

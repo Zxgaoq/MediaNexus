@@ -17,7 +17,7 @@ class Toolbar(QWidget):
         layout.setSpacing(10)
 
         # 标题（品牌标识）
-        title_label = QLabel("MediaSync QC")
+        title_label = QLabel("影枢 QC")
         title_label.setProperty("cssClass", "title")
         layout.addWidget(title_label)
 

@@ -2,7 +2,7 @@
 """
 内嵌用户手册查看器（网页形式）。
 
-优先使用 Qt WebEngine（QWebEngineView）以「网页」方式渲染 docs/MediaSync-Manual.html；
+优先使用 Qt WebEngine（QWebEngineView）以「网页」方式渲染 docs/MediaNexus-Manual.html；
 若运行环境未带 WebEngine（极少数精简安装），自动回退到 QTextBrowser 渲染同一份 HTML。
 两种方式都是「在应用窗口内嵌入网页」，不会跳转到外部浏览器 / 记事本。
 """
@@ -13,7 +13,7 @@ from PySide6.QtCore import QUrl
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QTextBrowser
 
 
-MANUAL_FILENAME = "MediaSync-Manual.html"
+MANUAL_FILENAME = "MediaNexus-Manual.html"
 
 
 def _find_manual_html():
@@ -41,7 +41,7 @@ def open_manual(parent=None):
     """打开内嵌用户手册（网页）。返回已 show() 的 QDialog 实例。"""
     path = _find_manual_html()
     dlg = QDialog(parent)
-    dlg.setWindowTitle("MediaSync 用户手册")
+    dlg.setWindowTitle("影枢 用户手册")
     dlg.resize(980, 720)
     layout = QVBoxLayout(dlg)
     layout.setContentsMargins(0, 0, 0, 0)

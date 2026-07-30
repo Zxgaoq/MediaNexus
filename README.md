@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="assets/logo.png" alt="MediaSync" width="96" />
+  <img src="assets/logo.png" alt="MediaNexus" width="96" />
 </p>
 
-<h1 align="center">MediaSync</h1>
+<h1 align="center">MediaNexus</h1>
 
 <p align="center">
   <b>NAS 素材同步 + 视频质检</b> 一体化桌面工具<br/>
@@ -14,7 +14,7 @@
   <img src="https://img.shields.io/badge/%E5%B9%B3%E5%8F%B0-Windows%2010%2F11-lightgrey" alt="平台" />
   <img src="https://img.shields.io/badge/%E6%A1%86%E6%9E%B6-PySide6-green" alt="框架" />
   <img src="https://img.shields.io/badge/%E7%89%88%E6%9C%AC-1.0.0-orange" alt="版本" />
-  <img src="https://img.shields.io/github/last-commit/Zxgaoq/MediaSync" alt="最近提交" />
+  <img src="https://img.shields.io/github/last-commit/Zxgaoq/MediaNexus" alt="最近提交" />
 </p>
 
 ---
@@ -22,8 +22,8 @@
 ## 快速开始
 
 ```bash
-git clone https://github.com/Zxgaoq/MediaSync.git
-cd MediaSync
+git clone https://github.com/Zxgaoq/MediaNexus.git
+cd MediaNexus
 
 # 安装依赖
 pip install -r requirements.txt
@@ -66,9 +66,9 @@ python run.py
 ## 项目结构
 
 ```
-MediaSync/
+MediaNexus/
 ├── run.py                      # 开发入口
-├── ProjectSync_Studio/         # 主程序包（PyInstaller 入口）
+├── MediaNexus/         # 主程序包（PyInstaller 入口）
 │   ├── constants.py            # 常量与配置
 │   ├── config_manager.py       # 配置单例
 │   ├── indexer.py              # NAS 索引器
@@ -86,14 +86,14 @@ MediaSync/
 ├── dev/                        # 开发手册
 ├── installer/                  # Inno Setup 安装器脚本
 ├── tests/                      # 冒烟测试
-├── ProjectSync_Studio.spec     # PyInstaller 打包配置
+├── MediaNexus.spec     # PyInstaller 打包配置
 └── config.json                 # 默认配置
 ```
 
 ### 模块边界
 
 ```
-ProjectSync_Studio   →  主程序、项目管理、NAS 索引、UI
+MediaNexus   →  主程序、项目管理、NAS 索引、UI
 core                 →  QC 算法与检测编排（禁止依赖 PySide6）
 qc_gui               →  QC 窗口、结果展示、交互
 utils                →  FFmpeg、导出、存储、配置代理
@@ -108,20 +108,20 @@ utils                →  FFmpeg、导出、存储、配置代理
 ### PyInstaller 打包
 
 ```bash
-python -m PyInstaller ProjectSync_Studio.spec --clean --noconfirm
+python -m PyInstaller MediaNexus.spec --clean --noconfirm
 ```
 
-输出：`dist/MediaSync/`（onedir 分发）
+输出：`dist/MediaNexus/`（onedir 分发）
 
 ### Inno Setup 安装包
 
 ```bash
-"C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\MediaSync-Setup.iss
+"C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\MediaNexus-Setup.iss
 ```
 
-输出：`dist/installer/MediaSync-Setup.exe`
+输出：`dist/installer/MediaNexus-Setup.exe`
 
-> 安装包不会删除 `%APPDATA%/MediaSync` 下的用户配置。
+> 安装包不会删除 `%APPDATA%/MediaNexus` 下的用户配置。
 
 ---
 
@@ -138,27 +138,27 @@ python -m pytest tests/ -q
 | 配置 / 索引 / 匹配 | `pytest tests/ -q` |
 | UI / 文件操作 | `python run.py` 手动验证 |
 | QC 检测器 | 样本视频验证黑帧 / 黑边 / 静音 |
-| 打包 | 启动 `dist/MediaSync/MediaSync.exe` |
+| 打包 | 启动 `dist/MediaNexus/MediaNexus.exe` |
 
 ---
 
 ## 配置
 
-运行时配置存放于 `%APPDATA%/MediaSync/`：
+运行时配置存放于 `%APPDATA%/MediaNexus/`：
 
 | 文件 | 用途 |
 |:---|:---|
 | `config.json` | 主配置（项目列表、预设、设置） |
 | `nas_index.db` | NAS 目录索引（SQLite WAL） |
 
-FFmpeg 查找优先级：系统 PATH → 用户手动指定 → `resources/ffmpeg/` → `%APPDATA%/MediaSync/ffmpeg/bin`
+FFmpeg 查找优先级：系统 PATH → 用户手动指定 → `resources/ffmpeg/` → `%APPDATA%/MediaNexus/ffmpeg/bin`
 
 ---
 
 ## 文档
 
 - [开发手册](dev/DevHandbook.md) — 架构细节、模块说明、已知问题
-- [用户手册](docs/MediaSync-Manual.html) — 功能使用指南
+- [用户手册](docs/MediaNexus-Manual.html) — 功能使用指南
 
 ---
 

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-ProjectSync Studio - 通用工具函数
+MediaNexus - 通用工具函数
 包含：路径安全处理、人类可读大小、重试装饰器、文件名合法性校验等。
 """
 from __future__ import annotations

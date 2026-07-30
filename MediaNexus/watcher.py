@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-ProjectSync Studio - NAS 实时文件监控
+MediaNexus - NAS 实时文件监控
 
 使用 Windows ReadDirectoryChangesW API（与资源管理器相同机制）递归监控
 NAS/UNC 目录，实时捕获文件与文件夹的创建、删除、重命名、内容修改。
@@ -24,7 +24,7 @@ import time
 
 from PySide6.QtCore import QThread, Signal
 
-logger = logging.getLogger("ProjectSync.Watcher")
+logger = logging.getLogger("MediaNexus.Watcher")
 
 # Windows API 常量
 FILE_LIST_DIRECTORY = 0x0001

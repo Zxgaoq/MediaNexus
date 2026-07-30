@@ -1,9 +1,9 @@
 # -*- mode: python ; coding: utf-8 -*-
 """
-MediaSync - PyInstaller 打包配置（onedir 模式）
-运行：python -m PyInstaller ProjectSync_Studio.spec --clean --noconfirm
-产出：dist/MediaSync/ 目录（含 MediaSync.exe + 全部 DLL / assets / docs）
-       配合 installer/MediaSync-Setup.iss 一键打包为 Windows 安装程序
+MediaNexus - PyInstaller 打包配置（onedir 模式）
+运行：python -m PyInstaller MediaNexus.spec --clean --noconfirm
+产出：dist/MediaNexus/ 目录（含 MediaNexus.exe + 全部 DLL / assets / docs）
+       配合 installer/MediaNexus-Setup.iss 一键打包为 Windows 安装程序
 """
 import os
 import sys
@@ -49,7 +49,7 @@ for _dll_name in (
             break  # 已找到，不要重复
 
 a = Analysis(
-    ['ProjectSync_Studio/main.py'],
+    ['MediaNexus/main.py'],
     pathex=['.'],
     binaries=_sqlite3_binaries + _extra_binaries,
     datas=[
@@ -78,7 +78,7 @@ a = Analysis(
 
 pyz = PYZ(a.pure)
 
-# onedir 模式：exe 与所有 DLL 放在同一目录（dist/MediaSync/）。
+# onedir 模式：exe 与所有 DLL 放在同一目录（dist/MediaNexus/）。
 # 这彻底避开了「单文件 + 临时目录解包」带来的 native DLL 路径问题（如
 # _sqlite3 报「找不到指定的模块」），也是 Inno Setup 安装器最自然的输入。
 exe = EXE(
@@ -86,7 +86,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='MediaSync',
+    name='MediaNexus',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -109,5 +109,5 @@ coll = COLLECT(
     strip=False,
     upx=False,
     upx_exclude=[],
-    name='MediaSync',
+    name='MediaNexus',
 )

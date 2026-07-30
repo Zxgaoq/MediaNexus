@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-ProjectSync Studio - NAS 索引器（异步 + SQLite）
+MediaNexus - NAS 索引器（异步 + SQLite）
 
 设计要点：
   1. 使用 asyncio + aiofiles 异步遍历 NAS / UNC 网络路径，目录枚举的
@@ -27,7 +27,7 @@ import aiofiles.os as aios
 from .constants import INDEX_DB_PATH, MAX_CONCURRENCY
 import logging
 
-logger = logging.getLogger("ProjectSync.Indexer")
+logger = logging.getLogger("MediaNexus.Indexer")
 
 ProgressCb = Callable[[int, int, str], None]  # (dirs, files, current_path)
 

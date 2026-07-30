@@ -40,7 +40,7 @@ def _stream_download(url: str, dest: str):
     ctx = ssl.create_default_context()
     ctx.check_hostname = False
     ctx.verify_mode = ssl.CERT_NONE
-    req = urllib.request.Request(url, headers={"User-Agent": "MediaSync-Build/1.0"})
+    req = urllib.request.Request(url, headers={"User-Agent": "MediaNexus-Build/1.0"})
     last_err = None
     for attempt in range(1, 4):
         try:
@@ -120,7 +120,7 @@ def main():
     label = "zip(标准库)" if use_zip else "7z(py7zr)"
 
     print(f"[1/3] 下载完整版构建（{label}）：\n      {url}")
-    tmp = tempfile.mkdtemp(prefix="mediasync_fffetch_")
+    tmp = tempfile.mkdtemp(prefix="medianexus_fffetch_")
     try:
         archive = os.path.join(tmp, "ffmpeg-full" + ext)
         _stream_download(url, archive)

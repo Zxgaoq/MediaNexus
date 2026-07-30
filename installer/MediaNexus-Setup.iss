@@ -1,23 +1,23 @@
 ; ============================================================================
-; MediaSync 安装程序脚本（Inno Setup 6）
+; MediaNexus 安装程序脚本（Inno Setup 6）
 ;
-; 用法（在项目根目录下，已先执行 PyInstaller 打包出 dist\MediaSync.exe）：
-;   "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\MediaSync-Setup.iss
+; 用法（在项目根目录下，已先执行 PyInstaller 打包出 dist\MediaNexus.exe）：
+;   "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\MediaNexus-Setup.iss
 ;
-; 产出：dist\installer\MediaSync-Setup.exe
+; 产出：dist\installer\MediaNexus-Setup.exe
 ;
 ; 特性：
 ;   - 检测已有安装，自动切换为「更新」模式（提示用户、保留安装路径）
-;   - 用户可选择安装位置（默认 C:\Program Files\MediaSync）
+;   - 用户可选择安装位置（默认 C:\Program Files\MediaNexus）
 ;   - 安装完成时可勾选「创建桌面快捷方式」「创建快速启动快捷方式」（默认勾选）
 ;   - 附带开始菜单程序组（主程序 + 用户手册 + 卸载）
-;   - 卸载时不删除用户配置（%APPDATA%\MediaSync）
+;   - 卸载时不删除用户配置（%APPDATA%\MediaNexus）
 ; ============================================================================
 
-#define MyAppName      "MediaSync"
+#define MyAppName      "MediaNexus"
 #define MyAppVersion   "1.0.0"
 #define MyAppPublisher "Zxgaoq"
-#define MyAppExeName   "MediaSync.exe"
+#define MyAppExeName   "MediaNexus.exe"
 #define MyAppId        "E7A2C41F-5B3D-4E8A-9C61-2F8A3B7D1E5A"
 ; 打包产物相对项目根目录（本脚本在 installer\ 下，向上退一级）
 #define SourceRoot     ".."
@@ -36,7 +36,7 @@ DisableProgramGroupPage=yes
 ; 允许不创建快捷方式（用户可在勾选时取消）
 AllowNoIcons=yes
 OutputDir={#SourceRoot}\dist\installer
-OutputBaseFilename=MediaSync-Setup
+OutputBaseFilename=MediaNexus-Setup
 SetupIconFile={#SourceRoot}\assets\logo.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
 Compression=lzma2/max
@@ -66,12 +66,12 @@ Name: "quicklaunchicon"; Description: "创建快速启动栏快捷方式(&Q)"; G
 
 [Files]
 ; 安装 PyInstaller onedir 产出的整个目录（含 exe + 所有 DLL + assets + docs）
-Source: "{#SourceRoot}\dist\MediaSync\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#SourceRoot}\dist\MediaNexus\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 ; 开始菜单程序组
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
-Name: "{group}\用户手册"; Filename: "{app}\_internal\docs\MediaSync-Manual.html"
+Name: "{group}\用户手册"; Filename: "{app}\_internal\docs\MediaNexus-Manual.html"
 Name: "{group}\卸载 {#MyAppName}"; Filename: "{uninstallexe}"
 ; 桌面快捷方式（勾选时创建）
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon

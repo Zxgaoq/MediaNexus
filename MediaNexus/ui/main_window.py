@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-ProjectSync Studio - 主窗口（三栏式布局 + 整体调度）
+MediaNexus - 主窗口（三栏式布局 + 整体调度）
 
 布局：左(项目导航) | 中(本地内容) | 右(服务器匹配)
 负责：配置加载、NAS 索引调度（进度/暂停）、模糊匹配调度、
@@ -455,7 +455,7 @@ class MainWindow(QMainWindow):
     def _on_watcher_error(self, root: str, msg: str):
         """Watcher 遇到错误。"""
         import logging
-        logging.getLogger("ProjectSync.Watcher").warning(f"监控错误 {root}: {msg}")
+        logging.getLogger("MediaNexus.Watcher").warning(f"监控错误 {root}: {msg}")
 
     def _on_watcher_overflow(self, root: str):
         """Watcher 事件缓冲区溢出：扫描一级子目录补偿丢失的事件。"""
@@ -478,7 +478,7 @@ class MainWindow(QMainWindow):
                 self.right._load_contents(current)
         except Exception as e:  # noqa: BLE001
             import logging
-            logging.getLogger("ProjectSync.Watcher").warning(f"补偿刷新失败 {root}: {e}")
+            logging.getLogger("MediaNexus.Watcher").warning(f"补偿刷新失败 {root}: {e}")
 
     # --------------------------- 匹配调度 ---------------------------
     def _run_match(self, project_names: list[str] | None = None):
@@ -837,7 +837,7 @@ def run_app():
         stored_ver = config_manager.settings.get("app_version", "")
         if stored_ver and stored_ver != APP_VERSION:
             QMessageBox.information(
-                None, f"MediaSync 已更新到 v{APP_VERSION}",
+                None, f"影枢 已更新到 v{APP_VERSION}",
                 f"已从 v{stored_ver} 更新到 v{APP_VERSION}。\n\n"
                 "新增：QC 检测结果缓存、SQLite 性能优化、缓存管理面板等。\n"
                 "您的所有配置和项目数据已完整保留。"

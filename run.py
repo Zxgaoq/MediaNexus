@@ -12,7 +12,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 # 全局崩溃捕获：务必在创建 QApplication / 导入其余模块之前安装，
 # 这样即使后续初始化阶段抛异常，也能落日志 + 弹窗，避免打包后"闪退无迹"。
 try:
-    from ProjectSync_Studio.crash_handler import install as _install_crash_handler
+    from MediaNexus.crash_handler import install as _install_crash_handler
 
     _install_crash_handler()
 except Exception:  # 绝不让捕获器自身导致启动失败
@@ -37,7 +37,7 @@ def _show_error(title, msg):
 
 def _main():
     try:
-        from ProjectSync_Studio.main import main
+        from MediaNexus.main import main
     except ImportError as exc:
         _show_error(
             "缺少运行依赖",

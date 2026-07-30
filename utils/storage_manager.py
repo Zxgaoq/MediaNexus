@@ -281,7 +281,7 @@ class StorageManager:
         """
         items = []
 
-        # 1. QC 检测结果缓存（%APPDATA%/MediaSync/qc_cache.db）
+        # 1. QC 检测结果缓存（%APPDATA%/MediaNexus/qc_cache.db）
         qc_mb, qc_count = 0.0, 0
         qc_path = self._get_qc_cache_path()
         if os.path.isfile(qc_path):
@@ -399,24 +399,24 @@ class StorageManager:
 
     def _get_qc_cache_path(self) -> str:
         try:
-            from ProjectSync_Studio.constants import CONFIG_DIR
+            from MediaNexus.constants import CONFIG_DIR
             return str(CONFIG_DIR / "qc_cache.db")
         except Exception:
-            return os.path.join(os.environ.get("APPDATA", ""), "MediaSync", "qc_cache.db")
+            return os.path.join(os.environ.get("APPDATA", ""), "MediaNexus", "qc_cache.db")
 
     def _get_ffmpeg_cache_dir(self) -> str:
         try:
-            from ProjectSync_Studio.constants import CONFIG_DIR
+            from MediaNexus.constants import CONFIG_DIR
             return str(CONFIG_DIR / "ffmpeg")
         except Exception:
-            return os.path.join(os.environ.get("APPDATA", ""), "MediaSync", "ffmpeg")
+            return os.path.join(os.environ.get("APPDATA", ""), "MediaNexus", "ffmpeg")
 
     def _get_crash_log_path(self) -> str:
         try:
-            from ProjectSync_Studio.constants import CONFIG_DIR
+            from MediaNexus.constants import CONFIG_DIR
             return str(CONFIG_DIR / "crash.log")
         except Exception:
-            return os.path.join(os.environ.get("APPDATA", ""), "MediaSync", "crash.log")
+            return os.path.join(os.environ.get("APPDATA", ""), "MediaNexus", "crash.log")
 
     def _get_temp_dir(self) -> str:
         import tempfile

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-ProjectSync Studio - 配置管理模块
+MediaNexus - 配置管理模块
 负责加载 / 保存用户配置（JSON 格式），包含：
   - 本地总项目根目录
   - N 个 NAS 服务器素材根目录

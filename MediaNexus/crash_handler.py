@@ -8,7 +8,7 @@
   * sys.unraisablehook    —— 捕获 __del__ / 协程等不可raise的异常
   * qInstallMessageHandler —— 捕获 Qt 致命错误（如跨线程访问 QObject）
 
-所有信息落到 %APPDATA%/MediaSync/crash.log，并在 GUI 可用时弹窗显示，
+所有信息落到 %APPDATA%/MediaNexus/crash.log，并在 GUI 可用时弹窗显示，
 方便用户复现后把日志发回定位根因。
 """
 from __future__ import annotations
@@ -27,7 +27,7 @@ def _crash_log_path() -> Path:
         from .constants import CONFIG_DIR
         base = Path(CONFIG_DIR)
     except Exception:
-        base = Path(os.environ.get("APPDATA", Path.home())) / "MediaSync"
+        base = Path(os.environ.get("APPDATA", Path.home())) / "MediaNexus"
     try:
         base.mkdir(parents=True, exist_ok=True)
     except OSError:
@@ -96,7 +96,7 @@ def _excepthook(exc_type, exc, tb) -> None:
     # 仅主线程弹窗（子线程异常交给其调用方处理，避免噪音与重复弹窗）
     if threading.current_thread() is threading.main_thread():
         try:
-            _show_box("MediaSync 发生错误", text)
+            _show_box("影枢 发生错误", text)
         except Exception:
             pass
     # 仍调用原始 hook，保留原有行为
@@ -133,7 +133,7 @@ def _qt_message_handler(msg_type, context, msg) -> None:
         )
         _write(text)
         if int(msg_type) == 3:  # Qt Fatal
-            _show_box("MediaSync 致命错误 (Qt)", text)
+            _show_box("影枢 致命错误 (Qt)", text)
     except Exception:
         pass
 

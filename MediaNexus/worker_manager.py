@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-ProjectSync Studio - Worker 统一管理器
+MediaNexus - Worker 统一管理器
 解决：
   1. closeEvent 中逐个等待 Worker 的脆弱性（统一注册 + 批量停止）
   2. 旧 Worker 结果回流覆盖新内容（generation 计数器）
@@ -27,7 +27,7 @@ import logging
 
 from PySide6.QtCore import QThread
 
-logger = logging.getLogger("ProjectSync.WorkerManager")
+logger = logging.getLogger("MediaNexus.WorkerManager")
 
 
 class WorkerManager:

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MediaSync 用户手册</title>
+<title>影枢 用户手册</title>
 <style>
   :root { --brand:#2563EB; --text:#1F2937; --muted:#6B7280; --line:#E5E7EB; --bg:#FFFFFF; --soft:#F9FAFB; }
   * { box-sizing: border-box; }
@@ -50,17 +50,17 @@
 <div class="wrap">
 
   <header class="hero">
-    <h1>MediaSync 用户手册</h1>
+    <h1>影枢 用户手册</h1>
     <p class="tag">影视全行业素材同步与质检工作台 —— 素材同步 + 视频质检，一个工作台搞定。</p>
   </header>
 
-  <p>MediaSync 把两件麻烦事合在一起：一边用<b>项目名智能匹配</b>把<b>本地项目</b>和 <b>NAS 素材</b>智能关联、一键直达；一边对视频做<b>批量质量检查</b>（黑场 / 闪帧 / 黑边 / 静音 / 一致性 / 多版本对比），并导出 Excel 报告。两个子系统共享同一份用户配置，互不干扰。</p>
+  <p>MediaNexus 把两件麻烦事合在一起：一边用<b>项目名智能匹配</b>把<b>本地项目</b>和 <b>NAS 素材</b>智能关联、一键直达；一边对视频做<b>批量质量检查</b>（黑场 / 闪帧 / 黑边 / 静音 / 一致性 / 多版本对比），并导出 Excel 报告。两个子系统共享同一份用户配置，互不干扰。</p>
 
   <h2 id="core">一、核心能力</h2>
   <ul>
     <li><b>素材智能关联</b>：项目名归一化 + 模糊匹配，自动关联本地项目与 NAS 素材；三栏同屏预览，一键直达。</li>
     <li><b>视频质量检查</b>：黑场 / 闪帧 / 黑边 / 静音 / 一致性检测 + 多版本对比，批量自动跑，区间精准标注。</li>
-    <li><b>统一配置</b>：同步与质检共享同一份用户配置（位于 <code>%APPDATA%\ProjectSyncStudio\config.json</code>），质检预设不漂移。</li>
+    <li><b>统一配置</b>：同步与质检共享同一份用户配置（位于 <code>%APPDATA%\MediaNexus\config.json</code>），质检预设不漂移。</li>
     <li><b>后台不打断</b>：索引 / 匹配 / 列举 / 复制全在后台线程，UI 永不阻塞；NAS 断连自动重试 3 次。</li>
     <li><b>报告导出</b>：质检结果一键导出 Excel，明细清晰，便于交付与归档。</li>
   </ul>
@@ -75,7 +75,7 @@
 
   <h2 id="compare">三、与传统方式对比</h2>
   <table>
-    <thead><tr><th>传统做法</th><th>MediaSync</th></tr></thead>
+    <thead><tr><th>传统做法</th><th>MediaNexus</th></tr></thead>
     <tbody>
       <tr><td>资源管理器逐层翻找 NAS</td><td>名称归一化 + 模糊匹配 + SQLite 索引，秒级定位</td></tr>
       <tr><td>人工逐帧盯片找黑场 / 闪帧</td><td>检测引擎批量扫描，问题区间精准标注</td></tr>
@@ -92,7 +92,7 @@
       <li><a href="#scan">扫描并缓存 NAS</a>：首次建立索引（可暂停 / 继续）</li>
       <li><a href="#match">确认 / 排除匹配结果</a>：把候选绑定到项目或让位</li>
       <li><a href="#copy">从 NAS 拖拽素材到本地</a>：后台复制，进度可见</li>
-      <li><a href="#qc">打开 MediaSync QC 做视频质检</a>：右键文件即可发起</li>
+      <li><a href="#qc">打开 影枢 QC 做视频质检</a>：右键文件即可发起</li>
       <li><a href="#report">导出 Excel 质检报告</a>：交付与归档</li>
     </ol>
   </div>
@@ -138,8 +138,8 @@
     </tbody>
   </table>
 
-  <h2 id="qc">视频质检（MediaSync QC）</h2>
-  <p>在主窗口的本地 / NAS 文件上 <b>右键 → 打开 QC 检测</b>（自动载入并开始检测），或右键 → <b>多版本对比</b>。质检窗口以独立非模态窗口运行，标题为 <b>「MediaSync QC」</b>。</p>
+  <h2 id="qc">视频质检（影枢 QC）</h2>
+  <p>在主窗口的本地 / NAS 文件上 <b>右键 → 打开 QC 检测</b>（自动载入并开始检测），或右键 → <b>多版本对比</b>。质检窗口以独立非模态窗口运行，标题为 <b>「影枢 QC」</b>。</p>
 
   <h3>检测项</h3>
   <p>
@@ -173,10 +173,10 @@
     <li><b>NAS 断了会卡 UI 吗？</b> 不会。目录读取和索引都在后台线程执行，UI 始终可操作。</li>
     <li><b>中文路径乱码？</b> 全程 UTF-8，配置存于 <code>%APPDATA%</code>，无乱码。</li>
     <li><b>万级文件卡顿？</b> 文件列表采用虚拟滚动 + 懒加载，只渲染可见行。</li>
-    <li><b>换电脑后配置还在吗？</b> 配置在 <code>%APPDATA%\ProjectSyncStudio\config.json</code>，随用户账户；换机需重新扫描索引。</li>
+    <li><b>换电脑后配置还在吗？</b> 配置在 <code>%APPDATA%\MediaNexus\config.json</code>，随用户账户；换机需重新扫描索引。</li>
   </ul>
 
-  <footer>MediaSync · 影视全行业素材同步与质检工具（素材同步 + 视频质检） · 本手册内嵌于应用程序，无需联网。</footer>
+  <footer>MediaNexus · 影视全行业素材同步与质检工具（素材同步 + 视频质检） · 本手册内嵌于应用程序，无需联网。</footer>
 
 </div>
 </body>

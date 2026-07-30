@@ -24,9 +24,9 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from ProjectSync_Studio.config_manager import config_manager
-from ProjectSync_Studio.constants import APP_NAME
-from ProjectSync_Studio.utils import resource_path
+from MediaNexus.config_manager import config_manager
+from MediaNexus.constants import APP_NAME
+from MediaNexus.utils import resource_path
 
 
 # 三种模式定义，必须与 settings_dialog 中的 radio 完全一致

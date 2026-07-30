@@ -5,7 +5,7 @@ FFmpeg 路径管理器（内置完整版 + 按需下载兜底）
   1. 系统 PATH 中的 ffmpeg / ffprobe（用户已自行安装，优先级最高）
   2. 用户在「设置 → 组件」中手动指定的目录（覆盖内置）
   3. 安装包内置的 resources/ffmpeg（完整版静态构建，开箱即用、离线可用）
-  4. 运行时下载缓存目录：%APPDATA%/MediaSync/ffmpeg/bin（兜底）
+  4. 运行时下载缓存目录：%APPDATA%/MediaNexus/ffmpeg/bin（兜底）
 
 分发策略：
   - 安装包随附 gyan.dev 的「完整版静态构建」（ffmpeg.exe + ffprobe.exe + ffplay.exe，
@@ -49,11 +49,11 @@ class FFmpegManager:
 
     # --------------------------- 路径计算 ---------------------------
     def _app_data_dir(self) -> str:
-        """跨平台的应用数据目录（与 CONFIG_DIR=%APPDATA%/MediaSync 对齐）。"""
+        """跨平台的应用数据目录（与 CONFIG_DIR=%APPDATA%/MediaNexus 对齐）。"""
         base = os.environ.get("APPDATA")
         if not base:
             base = os.path.expanduser("~/.config")
-        d = os.path.join(base, "MediaSync")
+        d = os.path.join(base, "MediaNexus")
         os.makedirs(d, exist_ok=True)
         return d
 
@@ -82,7 +82,7 @@ class FFmpegManager:
     def _manual_dir(self) -> str:
         """读取用户手动指定的目录（来自配置）。"""
         try:
-            from ProjectSync_Studio.config_manager import config_manager
+            from MediaNexus.config_manager import config_manager
             return (config_manager.settings.get("ffmpeg_manual_dir") or "").strip()
         except Exception:
             return ""
@@ -90,7 +90,7 @@ class FFmpegManager:
     def _download_url(self) -> str:
         """读取可配置的下载地址。"""
         try:
-            from ProjectSync_Studio.config_manager import config_manager
+            from MediaNexus.config_manager import config_manager
             url = (config_manager.settings.get("ffmpeg_download_url") or "").strip()
             if url:
                 return url
@@ -190,7 +190,7 @@ class FFmpegManager:
         if not (os.path.isfile(os.path.join(path, exe)) and os.path.isfile(os.path.join(path, prb))):
             return False
         try:
-            from ProjectSync_Studio.config_manager import config_manager
+            from MediaNexus.config_manager import config_manager
             config_manager.settings["ffmpeg_manual_dir"] = path
             config_manager.save()
         except Exception:
@@ -218,7 +218,7 @@ class FFmpegManager:
         os.makedirs(bin_dir, exist_ok=True)
 
         try:
-            tmp_dir = tempfile.mkdtemp(prefix="mediasync_ff_")
+            tmp_dir = tempfile.mkdtemp(prefix="medianexus_ff_")
             zip_path = os.path.join(tmp_dir, "ffmpeg.zip")
             if not self._download_file(url, zip_path, progress_cb):
                 return False, "下载已取消"

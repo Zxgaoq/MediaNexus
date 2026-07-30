@@ -1,4 +1,4 @@
-# MediaSync 开发手册
+# MediaNexus 开发手册
 
 > 版本：v1.0.0  
 > 更新时间：2026-07-28  
@@ -10,17 +10,17 @@
 
 | 项目 | 说明 |
 | --- | --- |
-| 产品名 | **MediaSync** |
+| 产品名 | **MediaNexus** |
 | 定位 | 本地项目与服务器素材的项目级同步管理，加视频 QC 检测与 Excel 报告导出 |
 | 运行形态 | Windows 桌面应用，基于 PySide6 |
 | 系统形态 | 单进程、模块化桌面单体 |
 | 开发入口 | `run.py` |
-| 打包入口 | `ProjectSync_Studio/main.py` |
-| 主配置路径 | `%APPDATA%/MediaSync/config.json` |
-| 索引数据库 | `%APPDATA%/MediaSync/nas_index.db` |
+| 打包入口 | `MediaNexus/main.py` |
+| 主配置路径 | `%APPDATA%/MediaNexus/config.json` |
+| 索引数据库 | `%APPDATA%/MediaNexus/nas_index.db` |
 | 分发形态 | PyInstaller `onedir` + Inno Setup |
 
-> 注意：旧目录 `%APPDATA%/ProjectSyncStudio` 仅用于自动迁移。当前新代码与新文档都应以 `%APPDATA%/MediaSync/` 为准。
+> 注意：旧目录 `%APPDATA%/MediaNexus` 仅用于自动迁移。当前新代码与新文档都应以 `%APPDATA%/MediaNexus/` 为准。
 
 ---
 
@@ -93,7 +93,7 @@
 
 | 模块 | 职责 |
 | --- | --- |
-| `ProjectSync_Studio` | 主程序、项目列表、设置、服务器索引、匹配、文件浏览、启动链路 |
+| `MediaNexus` | 主程序、项目列表、设置、服务器索引、匹配、文件浏览、启动链路 |
 | `core` | 无 GUI 依赖的 QC 核心算法与检测编排 |
 | `qc_gui` | QC 独立窗口、结果展示、交互控件 |
 | `utils` | FFmpeg 管理、配置代理、Excel 导出、缓存与文档查看 |
@@ -103,7 +103,7 @@
 - `core/` 不应 import PySide6，也不应直接弹窗
 - `qc_gui/` 应通过 `utils.config` 访问 QC 配置，不要私自维护第二份配置源
 - UI 层可以做编排，但耗时 I/O 必须交给 Worker
-- `ProjectSync_Studio/config_manager.py` 是主配置唯一权威来源
+- `MediaNexus/config_manager.py` 是主配置唯一权威来源
 - `NASIndexer` 的写入必须串行化，读取必须通过只读连接
 
 ---
@@ -115,7 +115,7 @@
 ```bash
 python -m pip install -r requirements.txt
 python run.py
-python -m ProjectSync_Studio.main
+python -m MediaNexus.main
 python diagnose.py
 ```
 
@@ -124,20 +124,20 @@ python diagnose.py
 ```text
 run.py
   -> 安装 crash_handler
-  -> import ProjectSync_Studio.main.main
+  -> import MediaNexus.main.main
   -> 切换工作目录到项目根
   -> 调用包入口
 
-ProjectSync_Studio.main.main()
+MediaNexus.main.main()
   -> 再次安装 crash_handler
-  -> 调用 ProjectSync_Studio.ui.main_window.run_app()
+  -> 调用 MediaNexus.ui.main_window.run_app()
   -> 创建 QApplication 并显示主窗口
 ```
 
 ### 重要说明
 
 - `run.py` 是开发启动器
-- PyInstaller 直接使用 `ProjectSync_Studio/main.py`
+- PyInstaller 直接使用 `MediaNexus/main.py`
 - 启动级保护不能只写在 `run.py`，必须在包入口也覆盖
 
 ---
@@ -145,9 +145,9 @@ ProjectSync_Studio.main.main()
 ## 5. 目录结构
 
 ```text
-MediaSync-QC-Studio/
+MediaNexus-QC-Studio/
 ├── run.py                         开发启动器
-├── ProjectSync_Studio/            主程序包
+├── MediaNexus/            主程序包
 │   ├── main.py                    PyInstaller 入口
 │   ├── constants.py               常量、路径、状态、样式
 │   ├── config_manager.py          主配置单例 + schema 迁移链
@@ -173,11 +173,11 @@ MediaSync-QC-Studio/
 │   └── multi_version_compare.py   多版本对比
 ├── qc_gui/                        QC 窗口组件
 ├── utils/                         基础设施与配置代理
-├── docs/MediaSync-Manual.html     用户手册
+├── docs/MediaNexus-Manual.html     用户手册
 ├── dev/DevHandbook.md             Markdown 开发手册
 ├── resources/ffmpeg/              内置 ffmpeg / ffprobe
 ├── installer/                     安装脚本
-├── ProjectSync_Studio.spec        PyInstaller onedir 配置
+├── MediaNexus.spec        PyInstaller onedir 配置
 ├── tests/test_smoke.py            冒烟测试
 └── tests/test_detectors.py        检测器单元测试（合成 fixture）
 ```
@@ -295,7 +295,7 @@ qc_bridge.open_qc_detection(file_paths, thread_count)
 
 ### 7.1 主配置 JSON
 
-主配置路径：`%APPDATA%/MediaSync/config.json`
+主配置路径：`%APPDATA%/MediaNexus/config.json`
 
 关键字段：
 
@@ -333,9 +333,9 @@ qc_bridge.open_qc_detection(file_paths, thread_count)
 
 ### `constants.py`
 
-- `APP_NAME = "MediaSync"`
+- `APP_NAME = "影枢"`
 - `APP_VERSION = "1.0.0"`
-- `CONFIG_DIR = Path(APPDATA) / "MediaSync"`
+- `CONFIG_DIR = Path(APPDATA) / "MediaNexus"`
 - `INDEX_DB_PATH = CONFIG_DIR / "nas_index.db"`
 - `DEFAULT_MATCH_THRESHOLD = 80`
 - `PAGE_SIZE = 500`
@@ -500,7 +500,7 @@ qc_bridge.open_qc_detection(file_paths, thread_count)
 1. 系统 PATH
 2. 用户手动指定目录
 3. `resources/ffmpeg`
-4. `%APPDATA%/MediaSync/ffmpeg/bin`
+4. `%APPDATA%/MediaNexus/ffmpeg/bin`
 
 ### 关键接口
 
@@ -523,23 +523,23 @@ qc_bridge.open_qc_detection(file_paths, thread_count)
 ### PyInstaller
 
 ```bash
-python -m PyInstaller ProjectSync_Studio.spec --clean --noconfirm
+python -m PyInstaller MediaNexus.spec --clean --noconfirm
 ```
 
-输出目录：`dist/MediaSync/`
+输出目录：`dist/MediaNexus/`
 
 ### Inno Setup
 
 ```bash
-"C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\MediaSync-Setup.iss
+"C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\MediaNexus-Setup.iss
 ```
 
-安装器输出：`dist/installer/MediaSync-Setup.exe`
+安装器输出：`dist/installer/MediaNexus-Setup.exe`
 
 ### 发布注意事项
 
 - 当前是 **onedir**，不是单文件 exe
-- 用户配置与缓存保留在 `%APPDATA%/MediaSync`
+- 用户配置与缓存保留在 `%APPDATA%/MediaNexus`
 - 打包验证属于发布链路，不是每次功能修改都必须执行
 
 ---
@@ -584,7 +584,7 @@ python -m pytest tests/test_detectors.py -v
 | UI 文件浏览 / 拖拽 / 删除 / 重命名 | `python run.py` 手测 |
 | QC 检测器 | 用样片验证黑帧 / 黑边 / 静音 |
 | watcher / 实时监控 / closeEvent | `pytest tests/test_smoke.py::test_watcher_stop_does_not_hang -v` + 手测关闭不卡死 |
-| 打包配置 | 启动 `dist/MediaSync/MediaSync.exe` |
+| 打包配置 | 启动 `dist/MediaNexus/MediaNexus.exe` |
 | 安装器 | 安装、升级、卸载验证 |
 
 ---
@@ -677,13 +677,13 @@ python -m pytest tests/test_detectors.py -v
 
 1. `README.md`
 2. `dev/DevHandbook.md`
-3. `ProjectSync_Studio/constants.py`
-4. `ProjectSync_Studio/config_manager.py` — 注意 schema 迁移链（ADR-005）
-5. `ProjectSync_Studio/models.py` — Project 类型化模型
-6. `ProjectSync_Studio/worker_manager.py` — Worker 统一管理器
-7. `ProjectSync_Studio/ui/main_window.py`
-8. `ProjectSync_Studio/watcher.py` — 实时文件监控（ADR-007）
-9. `ProjectSync_Studio/workers.py`
+3. `MediaNexus/constants.py`
+4. `MediaNexus/config_manager.py` — 注意 schema 迁移链（ADR-005）
+5. `MediaNexus/models.py` — Project 类型化模型
+6. `MediaNexus/worker_manager.py` — Worker 统一管理器
+7. `MediaNexus/ui/main_window.py`
+8. `MediaNexus/watcher.py` — 实时文件监控（ADR-007）
+9. `MediaNexus/workers.py`
 10. `core/engine.py` — 注意注册表驱动检测（ADR-006）
 11. `core/base_detector.py` + `core/adapters.py` — 检测器插件架构
 12. `core/frame_scanner.py`

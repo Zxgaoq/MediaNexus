@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-ProjectSync Studio - 设置对话框（多选项卡版本）
+MediaNexus - 设置对话框（多选项卡版本）
   * 通用：项目运行模式 + 心跳自动刷新
   * 项目：本地/NAS根目录、匹配阈值、忽略关键词（根据模式显示）
   * 检测：预设管理
@@ -47,7 +47,7 @@ class SettingsDialog(QDialog):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("设置 - MediaSync")
+        self.setWindowTitle("设置 - 影枢")
         self.resize(680, 620)
         self._mode_before = config_manager.project_mode
         self._build_ui()

@@ -2,7 +2,7 @@
 """
 QC 检测桥接模块
 ==============
-负责从 MediaSync 打开 QC 检测窗口 / 多版本对比窗口，提供统一的入口函数。
+负责从 MediaNexus 打开 QC 检测窗口 / 多版本对比窗口，提供统一的入口函数。
 """
 
 import os
@@ -77,7 +77,7 @@ def open_qc_detection(file_paths: list[str] | None = None,
     win.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
     win.bottom_bar.thread_spin.setValue(thread_count)
 
-    win.setWindowTitle("MediaSync QC")
+    win.setWindowTitle("影枢 QC")
 
     # QC 配置已统一由主程序配置单例（%APPDATA% 下的 qc_presets /
     # qc_active_preset / qc_settings）管理，VideoQC 启动时会直接读取，

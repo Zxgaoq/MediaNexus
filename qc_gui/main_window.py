@@ -202,7 +202,7 @@ class MainWindow(QMainWindow):
 
     def _init_ui(self):
         """初始化界面（装配各 Widget，信号在 MainWindow 统一编排）"""
-        self.setWindowTitle("MediaSync QC")
+        self.setWindowTitle("影枢 QC")
         self.setMinimumSize(1100, 700)
         self.resize(1200, 750)
 
@@ -1205,9 +1205,9 @@ class MainWindow(QMainWindow):
     # ========== 帮助 ==========
     def _show_about(self):
         QMessageBox.about(
-            self, "关于 MediaSync QC",
-            "<h2>MediaSync QC</h2>"
-            "<p>视频批量质量检测工具（MediaSync 一体化套件之质检子系统）</p>"
+            self, "关于 影枢 QC",
+            "<h2>影枢 QC</h2>"
+            "<p>视频批量质量检测工具（MediaNexus 一体化套件之质检子系统）</p>"
             "<p>功能: 视频元数据提取、黑帧/夹帧/跳帧/黑边/静音检测、一致性校验、多版本对比</p>"
             "<p>技术栈: Python + PySide6 + FFmpeg + OpenCV</p>"
         )

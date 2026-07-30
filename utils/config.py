@@ -13,9 +13,9 @@ logger = logging.getLogger("VideoQC.Config")
 
 
 # ---------------------------------------------------------------------------
-# 主程序（ProjectSync Studio / MediaSync）配置单例的懒加载
+# 主程序（MediaNexus / MediaNexus）配置单例的懒加载
 # ---------------------------------------------------------------------------
-# 当本模块在 MediaSync 主程序进程内被拉起时，VideoQC 的配置应直接复用主程序的
+# 当本模块在 MediaNexus 主程序进程内被拉起时，VideoQC 的配置应直接复用主程序的
 # %APPDATA% 配置文件（qc_presets / qc_active_preset / qc_settings），由主程序统一
 # 落盘，从而彻底消除「根目录 config.json」与「%APPDATA% 配置」双源漂移。
 # 独立运行 QC（未加载主程序）时回退到本地 config.json。
@@ -30,7 +30,7 @@ def _resolve_host_config_manager():
         return _HOST_CM_CACHE
     _HOST_CM_RESOLVED = True
     try:
-        from ProjectSync_Studio.config_manager import config_manager as cm
+        from MediaNexus.config_manager import config_manager as cm
         _HOST_CM_CACHE = cm
     except Exception:
         _HOST_CM_CACHE = None
@@ -176,7 +176,7 @@ class ConfigManager:
     def _get_config_path(self):
         """获取配置文件路径。
 
-        若运行在 MediaSync（ProjectSync Studio）主程序进程内，复用主程序的
+        若运行在 MediaNexus（MediaNexus）主程序进程内，复用主程序的
         %APPDATA% 配置文件（与 qc_presets / qc_active_preset 同源），避免
         出现「根目录 config.json」与「%APPDATA% 配置」双源漂移。
         """
@@ -193,7 +193,7 @@ class ConfigManager:
     def _load(self):
         """加载配置。
 
-        优先从主程序（ProjectSync Studio）的 %APPDATA% 配置读取 qc_presets /
+        优先从主程序（MediaNexus）的 %APPDATA% 配置读取 qc_presets /
         qc_active_preset / qc_settings；否则回退到本地 config.json（独立运行 QC 时）。
         仅对新创建的预设补全字段，不修改已有预设的用户参数。
         """
@@ -307,7 +307,7 @@ class ConfigManager:
     def save(self, force=False):
         """保存配置。
 
-        若运行在 MediaSync 主程序内，直接写入主程序配置单例的 qc_presets /
+        若运行在 MediaNexus 主程序内，直接写入主程序配置单例的 qc_presets /
         qc_active_preset / qc_settings，由主程序统一落盘，避免覆盖其 projects/settings。
         否则写回本地 config.json（qc_* 命名空间）。
         """

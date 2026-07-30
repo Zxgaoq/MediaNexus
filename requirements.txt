@@ -1,4 +1,4 @@
-# ProjectSync Studio 运行依赖
+# MediaNexus 运行依赖
 # 安装：pip install -r requirements.txt
 
 # GUI 框架：PySide6（LGPL 协议，可免费商用打包，单文件 exe 友好）

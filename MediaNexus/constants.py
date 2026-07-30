@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-ProjectSync Studio - 常量与默认配置
+MediaNexus - 常量与默认配置
 集中管理所有可调参数、状态枚举、默认忽略词等，便于统一维护。
 """
 from __future__ import annotations
@@ -10,7 +10,7 @@ import tempfile
 from pathlib import Path
 
 # ----------------------------- 应用元信息 -----------------------------
-APP_NAME = "MediaSync"
+APP_NAME = "影枢"
 APP_VERSION = "1.0.0"
 APP_AUTHOR = "Zxgaoq"
 
@@ -18,7 +18,7 @@ APP_AUTHOR = "Zxgaoq"
 # PyInstaller onedir 模式下 Qt 样式表里的相对文件路径会失效，且 data: URI
 # 在部分 Qt 版本 / 平台组合下不稳定。改为在 import 时把箭头 SVG 写到临时目录，
 # 样式表里引用绝对路径，开发态 / 打包态都 100% 可用。
-_SPIN_ARROW_DIR = os.path.join(tempfile.gettempdir(), "MediaSync", "spin-arrows")
+_SPIN_ARROW_DIR = os.path.join(tempfile.gettempdir(), "MediaNexus", "spin-arrows")
 os.makedirs(_SPIN_ARROW_DIR, exist_ok=True)
 _SPIN_UP_PATH = os.path.join(_SPIN_ARROW_DIR, "spin_up.svg")
 _SPIN_DOWN_PATH = os.path.join(_SPIN_ARROW_DIR, "spin_down.svg")
@@ -40,10 +40,10 @@ _SPIN_DOWN_URL = _SPIN_DOWN_PATH.replace("\\", "/")
 
 # 配置 / 索引 存储目录：默认放在 %APPDATA% 下，避免污染项目目录，
 # 同时保证中文用户名路径不出现乱码（使用 Path 而非字符串拼接）。
-# 统一以产品名 "MediaSync" 为目录名（与安装包品牌一致）。
-CONFIG_DIR = Path(os.environ.get("APPDATA", Path.home())) / "MediaSync"
+# 统一以产品名 "MediaNexus" 为目录名（与安装包品牌一致）。
+CONFIG_DIR = Path(os.environ.get("APPDATA", Path.home())) / "MediaNexus"
 # 旧目录名（历史遗留）：如存在旧配置且新目录尚无 config.json，自动整体迁移一次。
-_OLD_CONFIG_DIR = Path(os.environ.get("APPDATA", Path.home())) / "ProjectSyncStudio"
+_OLD_CONFIG_DIR = Path(os.environ.get("APPDATA", Path.home())) / "MediaSync"
 if (
     _OLD_CONFIG_DIR.is_dir()
     and (_OLD_CONFIG_DIR / "config.json").exists()

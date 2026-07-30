@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-ProjectSync Studio - 数据模型
+MediaNexus - 数据模型
 提供类型化的项目模型，替代裸 dict 访问，在边界处做校验。
 
 用法：

@@ -2,7 +2,7 @@
 """
 检测预设参数编辑面板
 从 VideoQC 的 preset_manager.py 移植，去除对 VideoQC ConfigManager 的依赖，
-改为读写 MediaSync config_manager 的 qc_presets / qc_active_preset。
+改为读写 MediaNexus config_manager 的 qc_presets / qc_active_preset。
 """
 from __future__ import annotations
 

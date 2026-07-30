@@ -10,7 +10,7 @@ import pytest
 
 from core.black_frame import BlackFrameDetector
 from core.black_border import BlackBorderDetector
-from ProjectSync_Studio.models import Project
+from MediaNexus.models import Project
 
 
 # ── 辅助：生成合成缩略图 ──

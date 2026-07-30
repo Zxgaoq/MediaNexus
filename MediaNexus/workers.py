@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-ProjectSync Studio - 后台线程 Workers
+MediaNexus - 后台线程 Workers
 所有耗时操作（NAS 索引、模糊匹配、目录列举、文件复制）均在子线程执行，
 通过信号回传进度与结果，主线程 UI 永不阻塞。
 """

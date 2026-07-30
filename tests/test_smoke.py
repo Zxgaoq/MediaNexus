@@ -1,5 +1,5 @@
 """
-MediaSync 防回归冒烟测试
+MediaNexus 防回归冒烟测试
 ================================================================
 覆盖核心引擎模块（不依赖 GUI，可CI/本地快速运行）：
   - 版本与默认配置契约
@@ -21,10 +21,10 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
-from ProjectSync_Studio import constants
-from ProjectSync_Studio import config_manager
-from ProjectSync_Studio import indexer
-from ProjectSync_Studio import matcher
+from MediaNexus import constants
+from MediaNexus import config_manager
+from MediaNexus import indexer
+from MediaNexus import matcher
 from utils.ffmpeg_manager import FFmpegManager
 
 
@@ -271,7 +271,7 @@ def test_watcher_stop_does_not_hang():
         pytest.skip("pywin32 not available")
 
     from PySide6.QtWidgets import QApplication
-    from ProjectSync_Studio.watcher import NASWatchThread
+    from MediaNexus.watcher import NASWatchThread
     import time
 
     # 确保 QApplication 存在（QThread 需要）
