@@ -1,0 +1,26 @@
+# ProjectSync Studio 运行依赖
+# 安装：pip install -r requirements.txt
+
+# GUI 框架：PySide6（LGPL 协议，可免费商用打包，单文件 exe 友好）
+PySide6>=6.6.0
+
+# 模糊匹配：rapidfuzz（C 实现，比 thefuzz 快数十倍，纯编译无额外依赖）
+rapidfuzz>=3.6.0
+
+# 异步文件 I/O：用于 NAS / UNC 网络路径的异步目录遍历
+aiofiles>=23.2.0
+
+# 剪贴板增强（Windows 可选；缺失时自动回退到 PowerShell）
+pywin32>=306 ; sys_platform == "win32"
+
+# ===== VideoQC Pro（视频质检子系统）运行依赖 =====
+# OpenCV：仅用于帧分析（imread / VideoCapture），无需 GUI 后端；
+# 用 headless 变体可避免自带 Qt/GTK 与 PySide6 冲突。
+opencv-python-headless>=4.8.0
+# 数值计算：黑场 / 闪帧 / 黑边 / 静音检测均依赖 numpy
+numpy>=1.24.0
+# Excel 报告导出：质检结果明细与多版本对比
+openpyxl>=3.1.0
+
+# 打包工具（仅打包阶段需要，运行时不需要）
+PyInstaller>=6.0.0

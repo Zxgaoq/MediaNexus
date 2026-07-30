@@ -1,0 +1,31 @@
+# Build artifacts
+build/
+dist/
+*.spec.bak
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+
+# PyInstaller
+*.manifest
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# pytest
+.pytest_cache/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Tool workspace
+.workbuddy/
+
+# Logs
+*.log
