@@ -300,7 +300,6 @@ python -m pytest tests/ -q
 
 ## 10. 开发文档
 
-- HTML 版开发手册：`dev/DevHandbook.html`
 - Markdown 版开发手册：`dev/DevHandbook.md`
 
 如果你是维护者，建议优先阅读开发手册，而不是只依赖 README。
