@@ -36,7 +36,6 @@
 | 打包入口 | `ProjectSync_Studio/main.py` |
 | 主配置 | `%APPDATA%/MediaSync/config.json` |
 | 索引数据库 | `%APPDATA%/MediaSync/nas_index.db` |
-| QC 缓存 | `%APPDATA%/MediaSync/qc_cache.db` |
 | 分发形态 | PyInstaller **onedir** + Inno Setup 安装器 |
 
 > 当前源码已经统一使用 `%APPDATA%/MediaSync/` 作为运行时配置目录。旧目录 `%APPDATA%/ProjectSyncStudio/` 仅用于兼容迁移，不应再作为新文档或新功能的默认路径。
@@ -62,15 +61,19 @@
 # 安装依赖
 python -m pip install -r requirements.txt
 
+# 准备 FFmpeg（二选一）
+# 方式一：运行脚本自动下载
+python scripts/fetch_ffmpeg.py
+# 方式二：手动将 ffmpeg.exe / ffprobe.exe 放入 resources/ffmpeg/
+
 # 启动主程序
 python run.py
 
 # 或直接走包入口
 python -m ProjectSync_Studio.main
-
-# 环境自检
-python diagnose.py
 ```
+
+> **注意**：`resources/ffmpeg/*.exe` 未纳入版本控制（文件约 95MB），首次克隆后需按上述方式获取。
 
 ### 启动链路
 
@@ -134,17 +137,21 @@ MediaSync-QC-Studio/
 │   ├── indexer.py                 # 服务器索引器 NASIndexer
 │   ├── matcher.py                 # 项目匹配逻辑
 │   ├── workers.py                 # 后台线程任务
+│   ├── worker_manager.py          # Worker 生命周期管理
 │   ├── qc_bridge.py               # 打开 QC 窗口 / 多版本对比
 │   └── ui/                        # 主窗口与各面板
 ├── core/                          # 无 GUI 依赖的 QC 领域核心
 ├── qc_gui/                        # QC 独立窗口与控件
 ├── utils/                         # FFmpeg、配置代理、导出、存储等基础设施
+├── scripts/                       # 工具脚本（如 fetch_ffmpeg.py）
+├── resources/ffmpeg/              # FFmpeg 二进制（需手动获取，不入库）
+├── assets/                        # 图标、SVG 等静态资源
 ├── docs/                          # 用户文档
 ├── dev/                           # 开发文档
 ├── installer/                     # Inno Setup 脚本
+├── tests/                         # 冒烟测试
 ├── ProjectSync_Studio.spec        # PyInstaller onedir 配置
-├── config.json                    # 示例 / fallback 配置
-└── tests/                         # 冒烟测试
+└── config.json                    # 示例 / fallback 配置
 ```
 
 ### 模块边界
@@ -198,7 +205,6 @@ MediaSync-QC-Studio/
 ### 6.3 索引与缓存
 
 - `nas_index.db`：服务器目录索引，使用 SQLite WAL
-- `qc_cache.db`：QC 结果缓存，按 `path + size + mtime` 命中
 
 ### 6.4 FFmpeg 路径优先级
 
@@ -284,9 +290,9 @@ python -m pytest tests/ -q
 - 单文件 exe 分发
 - 误把 `local_name` 当作展示名称
 
-### Q2：QC 结果为什么没有更新？
+### Q2：QC 检测每次都很慢？
 
-先检查 `qc_cache.db` 是否命中。同一路径、文件大小、修改时间一致时会复用缓存；可在设置中清理 QC 缓存后重测。
+QC 检测当前不使用缓存，每次都是实时执行。如果视频较长，可在设置中调整性能参数（如最大线程数）。确保 FFmpeg 可用且路径正确。
 
 ### Q3：为什么不能在子线程里直接创建缩略图图标？
 

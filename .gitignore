@@ -27,6 +27,9 @@ Thumbs.db
 # Tool workspace
 .workbuddy/
 
+# Runtime data
+data/
+
 # Large binaries
 resources/ffmpeg/*.exe
 
