@@ -82,7 +82,7 @@
 - **决策**：
   1. FFprobe 与 FrameScanner 通过 `ThreadPoolExecutor(max_workers=2)` 并行启动。FrameScanner 从 OpenCV 自行获取时长并计算 `sample_interval`，解除对 FFprobe `duration` 的前置依赖。
   2. 静音检测在视觉管线启动前异步提交（`ThreadPoolExecutor(max_workers=1)`），与黑帧/黑边检测并行执行，视觉检测器循环中跳过 `silence` key，最后收集结果。
-  3. `actual_fps` 优先从 FFprobe 元数据获取（精度更高），fallback 到 `scanner.fps`；`duration` 直接使用 `scanner.duration`（OpenCV 提供）。
+  3. `actual_fps` 优先从 FFprobe 元数据获取（精度更高），fallback 到 `scanner.fps`；`duration` 优先从 FFprobe 元数据获取（精度更高），fallback 到 `scanner.duration`（OpenCV 提供）。
 - **收益**：FFprobe 耗时（0.5~2s）被 FrameScanner 解码吸收；静音检测耗时（视频时长 10~20%）被视觉管线覆盖；单文件总耗时从"各环节之和"降为"最长环节耗时"，预估降低 30~50%。
 - **代价**：增加了线程管理复杂度；取消检测时需要额外清理静音 future 和 executor。
 - **不变项**：各检测器的算法逻辑、输入数据、阈值参数、分辨率均未改变；注册表仍包含 3 个适配器（SilenceAdapter 在循环中被 skip 但不移除，保持注册表完整性）。
@@ -116,7 +116,6 @@
 python -m pip install -r requirements.txt
 python run.py
 python -m MediaNexus.main
-python diagnose.py
 ```
 
 ### 启动链路
@@ -145,9 +144,16 @@ MediaNexus.main.main()
 ## 5. 目录结构
 
 ```text
-MediaNexus-QC-Studio/
+MediaNexus/
 ├── run.py                         开发启动器
+├── README.md                      项目说明
+├── requirements.txt               依赖清单
+├── config.json                    默认配置模板
+├── build.bat                      打包脚本
+├── MediaNexus.spec        PyInstaller onedir 配置
+├── .gitignore
 ├── MediaNexus/            主程序包
+│   ├── __init__.py
 │   ├── main.py                    PyInstaller 入口
 │   ├── constants.py               常量、路径、状态、样式
 │   ├── config_manager.py          主配置单例 + schema 迁移链
@@ -159,10 +165,24 @@ MediaNexus-QC-Studio/
 │   ├── matcher.py                 匹配逻辑
 │   ├── workers.py                 QThread 后台任务
 │   ├── qc_bridge.py               打开 QC / 多版本窗口
+│   ├── clipboard.py               剪贴板模块
+│   ├── utils.py                   主程序工具模块
 │   └── ui/                        三栏主窗口与对话框
-├── core/                          QC 领域核心
+│       ├── __init__.py
+│       ├── main_window.py         主窗口（含 closeEvent 六步）
+│       ├── left_sidebar.py        左栏：项目导航
+│       ├── middle_panel.py        中栏：本地目录
+│       ├── right_panel.py         右栏：服务器目录
+│       ├── file_list_view.py      文件列表（虚拟滚动 + 选中保持）
+│       ├── add_project_dialog.py  添加项目对话框
+│       ├── select_match_dialog.py 选择匹配候选对话框
+│       ├── settings_dialog.py     设置对话框
+│       ├── preset_panel.py        预设面板
+│       └── widgets.py             通用控件
+├── core/                          QC 领域核心（禁止依赖 PySide6）
+│   ├── __init__.py
 │   ├── engine.py                  检测引擎（注册表驱动 + 并行调度）
-│   ├── base_detector.py           BaseDetector 接口 + DetectionContext + Registry
+│   ├── base_detector.py           BaseDetector 接口 + DetectionContext + DetectorRegistry
 │   ├── adapters.py                检测器适配器 + create_default_registry()
 │   ├── frame_scanner.py           单次解码扫描
 │   ├── black_frame.py             黑帧检测
@@ -172,14 +192,49 @@ MediaNexus-QC-Studio/
 │   ├── consistency.py             一致性校验
 │   └── multi_version_compare.py   多版本对比
 ├── qc_gui/                        QC 窗口组件
+│   ├── __init__.py
+│   ├── main_window.py             QC 主窗口（多版本对比 Tab）
+│   ├── multi_version_compare_dialog.py  多版本对比对话框
+│   ├── preset_manager.py          预设管理
+│   ├── styles.py                  QC 样式
+│   ├── theme.py                   主题
+│   └── widgets/                   QC 子控件
+│       ├── __init__.py
+│       ├── toolbar.py             工具栏
+│       ├── file_panel.py          文件面板
+│       ├── result_panel.py        结果面板
+│       ├── detail_panel.py        详情面板
+│       ├── bottom_bar.py          底栏
+│       └── status_bar.py          状态栏
 ├── utils/                         基础设施与配置代理
-├── docs/MediaNexus-Manual.html     用户手册
-├── dev/DevHandbook.md             Markdown 开发手册
-├── resources/ffmpeg/              内置 ffmpeg / ffprobe
-├── installer/                     安装脚本
-├── MediaNexus.spec        PyInstaller onedir 配置
-├── tests/test_smoke.py            冒烟测试
-└── tests/test_detectors.py        检测器单元测试（合成 fixture）
+│   ├── __init__.py
+│   ├── config.py                  QC ConfigManager（复用主程序配置，独立运行回退本地）
+│   ├── ffmpeg_manager.py          FFmpeg 路径与可用性管理
+│   ├── storage_manager.py         存储路径管理
+│   ├── exporter.py                Excel 报告导出
+│   ├── docs_viewer.py             文档查看器
+│   └── onboarding.py              首次启动引导
+├── assets/                        图标与静态资源
+│   ├── logo.png
+│   ├── logo.ico
+│   └── arrows/                    SpinBox 箭头 SVG（运行时复制到临时目录）
+│       ├── spin_up.svg
+│       └── spin_down.svg
+├── logo/                          品牌资源
+│   └── 透明版.png
+├── docs/
+│   └── MediaNexus-Manual.html     用户手册
+├── dev/
+│   └── DevHandbook.md             Markdown 开发手册（本文件）
+├── scripts/
+│   └── fetch_ffmpeg.py            FFmpeg 下载脚本
+├── installer/                     Inno Setup 安装脚本
+│   ├── MediaNexus-Setup.iss
+│   └── build-installer.bat
+├── resources/ffmpeg/              内置 ffmpeg / ffprobe（由 scripts/fetch_ffmpeg.py 下载）
+└── tests/
+    ├── test_smoke.py              冒烟测试
+    └── test_detectors.py          检测器单元测试（合成 fixture）
 ```
 
 ---
@@ -278,6 +333,7 @@ qc_bridge.open_qc_detection(file_paths, thread_count)
            └────────────────────────────────────────────┘
         -> 等待 probe_future → metadata
         -> 等待 scan_future  → thumbs + black_border_result
+        -> 根据 FFprobe 精确时长重算 sample_interval，对 thumbs 按需降采样
         -> 静音检测异步启动（silence_executor）
         -> 构建 DetectionContext
         -> 遍历 DetectorRegistry（跳过 silence）：
@@ -343,19 +399,23 @@ qc_bridge.open_qc_detection(file_paths, thread_count)
 
 ### `config_manager.py`
 
+> **注意：项目中有两个 `ConfigManager`**，不要混淆：
+> - `MediaNexus/config_manager.py` 的 `ConfigManager`（本节）—— 主程序配置单例，权威来源，管 projects / settings / qc_presets / qc_active_preset / qc_settings 等，全局实例 `config_manager`。
+> - `utils/config.py` 的 `ConfigManager` —— QC 子系统专用，加载时优先复用主程序配置（通过 `_resolve_host_config_manager()` 拿到主程序单例的 qc_* 字段），独立运行 QC（未加载主程序）时回退到本地 `config.json`。保存时也走主程序单例统一落盘，避免双源漂移。
+
 - `CURRENT_SCHEMA_VERSION = 2`
 - `MIGRATIONS` — 版本迁移函数映射（v0→v1, v1→v2, ...）
 - `_run_migrations(data)` — load() 时自动链式升级
-- `local_roots`
-- `nas_roots`
-- `projects`
-- `settings`
-- `project_mode`
-- `qc_presets`
-- `qc_active_preset`
+- 属性：`data` / `local_roots` / `nas_roots` / `projects` / `settings` / `project_mode` / `qc_presets` / `qc_active_preset` / `qc_settings` / `onboarding_done` / `auto_refresh_enabled` / `auto_refresh_interval` / `match_threshold` / `ignore_patterns` / `ffmpeg_manual_dir` / `ffmpeg_download_url`
+- `get_project(local_name)` — 按 key 取项目 dict
 - `upsert_project(project)` — 写入前通过 `Project.from_dict()` 做边界校验
-- `remove_project(local_name)`
-- `set_confirmed_nas(local_name, nas_path)`
+- `remove_project(local_name)` — 删除项目并清理 excluded 列表
+- `cleanup_stale_projects()` — 清理 confirmed_nas_path 已失效的非 UNC 项目
+- `set_confirmed_nas(local_name, nas_path)` — 确认服务器路径绑定
+- `add_excluded(local_name, nas_path)` / `remove_excluded(local_name, nas_path)` — 排除候选管理
+- `get_active_preset_thresholds()` — 返回当前活动预设的阈值（供 QC 引擎）
+- `set_indexed_at(iso)` — 记录最近一次索引时间
+- 全局单例：`config_manager`
 
 ### `models.py`
 
@@ -368,19 +428,25 @@ qc_bridge.open_qc_detection(file_paths, thread_count)
 ### `worker_manager.py`
 
 - `WorkerManager` — Worker 生命周期统一管理器
-  - `register(name, worker)` / `unregister(name)` — 注册/注销
-  - `stop_all(timeout_per_worker)` — 并行发信号 + 逐个等待
+  - `register(name, worker)` / `unregister(name)` / `get(name)` — 注册/注销/查询
+  - `stop_all(timeout_per_worker)` — 并行发信号 + 逐个等待（含 `isRunning()` 的 RuntimeError 防护）
   - `generation_for(tag)` / `is_stale(tag, gen)` — 陈旧结果防护
+  - `running_count()` / `names()` — 诊断
 
 ### `indexer.py`
 
-- `NASIndexer.rebuild(...)`
-- `NASIndexer.reindex_subtree(root)`
-- `NASIndexer.deep_scan_projects(project_roots)`
-- `NASIndexer.list_children(parent_path)`
-- `NASIndexer.count_children(parent_path)`
-- `NASIndexer.refresh_dir(dir_path)` — 单级增量刷新（scandir + diff + 单事务增删改），由 watcher 事件驱动
+- `NASIndexer.rebuild(...)` — 全量重建（`fast=True` 仅扫项目级目录）
+- `NASIndexer.reindex_subtree(root)` — 增量重建单个子树
+- `NASIndexer.deep_scan_projects(project_roots)` — 对已添加项目逐个深度扫描
+- `NASIndexer.refresh_dir(dir_path)` — 单级增量刷新（scandir + diff + 单事务增删改），由 watcher 事件驱动；写锁超时 2s，全量扫描期间自动跳过
 - `NASIndexer.refresh_dirs(dir_paths)` — 批量增量刷新多个目录
+- `NASIndexer.query_all_folders()` — 返回所有已索引文件夹路径（匹配候选用）
+- `NASIndexer.get_folder_mtime(path, default=0.0)` — 取某文件夹自身 mtime（项目排序用）
+- `NASIndexer.list_children(parent_path)` — 直接子项（文件夹在前、按名称排序），供右栏懒加载
+- `NASIndexer.count_children(parent_path)` — 子项数量
+- `NASIndexer.get_meta(key, default="")` / `NASIndexer._set_meta(key, value)` — meta 表读写
+- `NASIndexer.clear()` — 删除整个 db 文件
+- 全局单例：`indexer`
 
 ### `watcher.py`
 
@@ -394,7 +460,7 @@ qc_bridge.open_qc_detection(file_paths, thread_count)
   - `BUFFER_SIZE = 65536` — 64KB 事件缓冲区
   - Signals: `changed(str, list)` / `error(str, str)` / `connected(str)` / `disconnected(str)` / `overflow(str)`
 - `NASWatcherManager` — 多目录监控生命周期管理
-  - `watch(root_path)` / `unwatch(root_path)` / `stop_all()`
+  - `watch(root_path)` / `unwatch(root_path)` / `stop_all()` / `watching_roots()`
   - `stop_all()` 策略：并行发 stop 信号 → 统一等待（每个最多 1s）→ 清空字典
   - 回调: `on_changed` / `on_connected` / `on_disconnected` / `on_error` / `on_overflow`
   - **关闭时**：`closeEvent` 先将所有回调设为 `None`（防止队列信号触发耗时操作），再调 `stop_all()`
@@ -426,9 +492,9 @@ qc_bridge.open_qc_detection(file_paths, thread_count)
 - `BaseDetector` — 所有检测器必须实现的抽象基类
   - `key` — 结果 dict 中的字段名
   - `detect(ctx: DetectionContext) -> dict` — 检测入口
-- `DetectionContext` — 传递给每个检测器的上下文（filepath, thumbs, fps, scanner, thresholds 等）
+- `DetectionContext` — 传递给每个检测器的上下文，字段：`filepath`（视频路径，静音检测用）、`metadata`（FFprobe 元数据）、`fps`（帧率）、`thumbs`（缩略图列表 `[(frame_num, gray_160x90), ...]`）、`scanner`（FrameScanner 引用，黑边检测用）、`thresholds`（当前预设阈值）、`performance`（性能设置）
 - `DetectorRegistry` — 检测器注册表
-  - `register(detector)` / `unregister(key)` / `iterate()`
+  - `register(detector)` / `unregister(key)` / `get(key)` / `iterate()` / `keys()`
 - `adapters.create_default_registry()` — 返回包含 3 个内置适配器的注册表
 
 ### 单项检测器
@@ -603,7 +669,7 @@ python -m pytest tests/test_detectors.py -v
 1. 在 `core/` 下新建文件，实现 `BaseDetector` 子类（定义 `key`、`name`、`detect(ctx)`）
 2. 在 `core/adapters.py` 中创建适配器（从 `DetectionContext` 提取所需数据）
 3. 在 `create_default_registry()` 中注册一行
-4. 阈值补到 `utils/config.py` 的 `DEFAULT_THRESHOLDS`
+4. 阈值补到 `utils/config.py` 的 `DEFAULT_THRESHOLDS`（该字典目前包含 4 个分组：`black_frame` / `black_border` / `silence` / `performance`，其中 `performance` 含 `max_threads`、`max_duration_for_full_scan`）
 5. 若需要配置 schema 变更，在 `config_manager.py` 的 `MIGRATIONS` 中加迁移函数并递增 `CURRENT_SCHEMA_VERSION`
 6. 必要时同步修改 `qc_gui` 结果展示与 `utils/exporter.py`
 7. 在 `tests/test_detectors.py` 中添加单元测试（合成 numpy 缩略图，无需真实视频）
@@ -649,9 +715,9 @@ python -m pytest tests/test_detectors.py -v
 16. 右栏「刷新」按钮在 watcher 活跃时走轻量路径（`refresh_dir` + 同步读索引），不活跃时回退子树扫描。修改刷新逻辑时必须保留这个双路判断
 17. **QC 静音检测在注册表循环中被 skip，单独异步执行（ADR-008）**——新增检测器如果也需要与视觉管线并行（只依赖文件路径，不依赖缩略图），需要在 `analyze_file` 中类似静音检测的方式单独处理，不要仅注册到 registry 就期望它自动并行
 18. **QC 取消检测时必须清理静音 future 和 executor**——`cancel()` 设置 `_cancel_flag` 后，`analyze_file` 在循环中退出时会对 `silence_future.cancel()` 和 `silence_executor.shutdown(wait=False)`。新增的异步检测器也必须在取消路径中做同样清理
-19. **黑帧 UI 标签已统一为"高危 人工复核"**——黑帧 severity 最低级从旧的"提示"改为"高危 人工复核"。黑帧输出新增 `frame_count` 字段（持续帧数），GUI 显示帧数而非秒数（避免短黑帧显示"0.0s"不可读）
+19. **黑帧 severity 有四种：错误 / 警告 / 高危 人工复核 / 转场**——最低级从旧的"提示"改为"高危 人工复核"；当 `is_transition=True`（亮度曲线呈渐变转场特征）时 severity 为"转场"。黑帧输出新增 `frame_count` 字段（持续帧数），GUI 显示帧数而非秒数（避免短黑帧显示"0.0s"不可读）
 20. **`utils/logger.py` 和 `presets/` 目录已删除**——`logger.py` 从未被引用（项目直接用标准 `logging.getLogger()`）；`presets/` 为空包。清理时同步移除了大量无用 import（详见各文件 git 历史）
-21. **PySide6 Worker 使用 `deleteLater` 后必须清理 Python 引用**——`DeepScanWorker` 在 `finished` 信号中连接 `deleteLater`，C++ 对象被销毁后 Python 引用仍指向已死 wrapper，心跳定时器调用 `isRunning()` 会触发 `RuntimeError`。修复方式：新增 `_on_deep_scan_done()` 槽函数，在 `deleteLater` 后将 `self._deep_scan_worker = None` 并从 `WorkerManager` 注销。所有 `isRunning()` 调用处需加 `try/except RuntimeError` 防护
+21. **PySide6 Worker 使用 `deleteLater` 后必须清理 Python 引用**——`DeepScanWorker` 在 `finished` 信号中连接 `deleteLater`，C++ 对象被销毁后 Python 引用仍指向已死 wrapper，心跳定时器调用 `isRunning()` 会触发 `RuntimeError`。修复方式（仅 `main_window.py` 已应用）：新增 `_on_deep_scan_done()` 槽函数，在 `deleteLater` 后将 `self._deep_scan_worker = None` 并从 `WorkerManager` 注销；所有 `isRunning()` 调用处加 `try/except RuntimeError` 防护。注意 `left_sidebar.py` 中仍使用旧的 `finished.connect(worker.deleteLater)` 直接模式（该处不调用 `isRunning()`，暂未触发崩溃）；若后续在 `left_sidebar.py` 中加入 `isRunning()` 检查，需同步应用上述修复模式
 22. **`FileListView.set_entries()` 会清空 Qt 选中状态**——`beginResetModel()` 是 Qt 框架行为，SelectionModel 会立即清除所有选中索引。Watcher 变更、心跳定时器、手动刷新、Worker 完成均会触发 `set_entries()`。修复方式：在 `FileListView.set_entries()` 中先调用 `selected_paths()` 保存当前选中路径，模型重置后根据路径在新 `_row_of` 中定位行号并通过 `selectionModel().select()` 恢复
 23. **`qc_gui/main_window.py` 必须导入 `QTableWidgetItem`**——多版本对比的一致性 Tab 使用该组件构建参数对比表格，漏导会导致点击结果查看一致性时 `NameError` 崩溃
 24. **`WorkerManager.stop_all()` 和 `running_count()` 中 `isRunning()` 需 RuntimeError 防护**——Worker 的 C++ 对象被 `deleteLater` 销毁后，Python 引用仍存活，调用 `isRunning()` 触发 `RuntimeError: libshiboken: Internal C++ object already deleted`。修复：`stop_all` 中用 `try/except RuntimeError` 包裹 `isRunning()` 调用，异常时视为 `alive=False`；`running_count` 同理
