@@ -10,16 +10,16 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/python-3.10%2B-blue" alt="Python" />
-  <img src="https://img.shields.io/badge/platform-Windows%2010%2F11-lightgrey" alt="Platform" />
-  <img src="https://img.shields.io/badge/framework-PySide6-green" alt="Framework" />
-  <img src="https://img.shields.io/badge/version-1.0.0-orange" alt="Version" />
-  <img src="https://img.shields.io/github/last-commit/Zxgaoq/MediaSync" alt="Last Commit" />
+  <img src="https://img.shields.io/badge/Python-3.10%2B-blue" alt="Python" />
+  <img src="https://img.shields.io/badge/%E5%B9%B3%E5%8F%B0-Windows%2010%2F11-lightgrey" alt="平台" />
+  <img src="https://img.shields.io/badge/%E6%A1%86%E6%9E%B6-PySide6-green" alt="框架" />
+  <img src="https://img.shields.io/badge/%E7%89%88%E6%9C%AC-1.0.0-orange" alt="版本" />
+  <img src="https://img.shields.io/github/last-commit/Zxgaoq/MediaSync" alt="最近提交" />
 </p>
 
 ---
 
-## Quick Start
+## 快速开始
 
 ```bash
 git clone https://github.com/Zxgaoq/MediaSync.git
@@ -35,11 +35,11 @@ python scripts/fetch_ffmpeg.py
 python run.py
 ```
 
-> FFmpeg 也可手动放入 `resources/ffmpeg/`，或依赖系统 PATH。不安装 FFmpeg 程序仍可启动，但 QC 检测不可用。
+> FFmpeg 也可手动放入 `resources/ffmpeg/`，或依赖系统 PATH。未安装 FFmpeg 程序仍可启动，但 QC 检测不可用。
 
 ---
 
-## Features
+## 功能
 
 ### ProjectSync — 素材同步
 
@@ -63,7 +63,7 @@ python run.py
 
 ---
 
-## Project Structure
+## 项目结构
 
 ```
 MediaSync/
@@ -90,7 +90,7 @@ MediaSync/
 └── config.json                 # 默认配置
 ```
 
-### Module Boundaries
+### 模块边界
 
 ```
 ProjectSync_Studio   →  主程序、项目管理、NAS 索引、UI
@@ -103,9 +103,9 @@ utils                →  FFmpeg、导出、存储、配置代理
 
 ---
 
-## Build & Release
+## 构建与发布
 
-### PyInstaller
+### PyInstaller 打包
 
 ```bash
 python -m PyInstaller ProjectSync_Studio.spec --clean --noconfirm
@@ -113,7 +113,7 @@ python -m PyInstaller ProjectSync_Studio.spec --clean --noconfirm
 
 输出：`dist/MediaSync/`（onedir 分发）
 
-### Inno Setup Installer
+### Inno Setup 安装包
 
 ```bash
 "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\MediaSync-Setup.iss
@@ -121,17 +121,17 @@ python -m PyInstaller ProjectSync_Studio.spec --clean --noconfirm
 
 输出：`dist/installer/MediaSync-Setup.exe`
 
-> 安装包不删除 `%APPDATA%/MediaSync` 下的用户配置。
+> 安装包不会删除 `%APPDATA%/MediaSync` 下的用户配置。
 
 ---
 
-## Testing
+## 测试
 
 ```bash
 python -m pytest tests/ -q
 ```
 
-覆盖：版本契约、索引器、并发稳定性、matcher 评分、FFmpeg 管理等。
+覆盖：版本契约、索引器、并发稳定性、匹配器评分、FFmpeg 管理等。
 
 | 修改范围 | 最低验证 |
 |:---|:---|
@@ -142,7 +142,7 @@ python -m pytest tests/ -q
 
 ---
 
-## Configuration
+## 配置
 
 运行时配置存放于 `%APPDATA%/MediaSync/`：
 
@@ -155,13 +155,13 @@ FFmpeg 查找优先级：系统 PATH → 用户手动指定 → `resources/ffmpe
 
 ---
 
-## Documentation
+## 文档
 
 - [开发手册](dev/DevHandbook.md) — 架构细节、模块说明、已知问题
 - [用户手册](docs/MediaSync-Manual.html) — 功能使用指南
 
 ---
 
-## License
+## 许可证
 
 本项目仅供内部工具使用，未开源许可。如需使用请联系作者。
