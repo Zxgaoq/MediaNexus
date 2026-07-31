@@ -31,7 +31,6 @@ class DetectionEngine:
         self._cancel_flag = threading.Event()
         self._progress_callback = None
         self._log_callback = None
-        self._complete_callback = None
         self._registry = create_default_registry()
 
     def set_progress_callback(self, callback):
@@ -41,10 +40,6 @@ class DetectionEngine:
     def set_log_callback(self, callback):
         """设置日志回调函数 callback(message)"""
         self._log_callback = callback
-
-    def set_complete_callback(self, callback):
-        """设置完成回调函数 callback()"""
-        self._complete_callback = callback
 
     def cancel(self):
         """取消当前检测任务"""
@@ -363,10 +358,6 @@ class DetectionEngine:
             self._log(f"一致性校验完成: {status}")
 
         self._progress(100, "检测完成！")
-
-        # 触发完成回调（用于提示音等）
-        if self._complete_callback:
-            self._complete_callback()
 
         return results
 

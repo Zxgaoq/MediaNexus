@@ -27,10 +27,6 @@ class FileClipboard:
     def has_content(self) -> bool:
         return bool(self._paths)
 
-    @property
-    def operation(self) -> str | None:
-        return self._operation
-
     def is_cut(self) -> bool:
         return self._operation == "cut"
 

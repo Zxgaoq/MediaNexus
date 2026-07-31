@@ -412,8 +412,6 @@ qc_bridge.open_qc_detection(file_paths, thread_count)
 - `remove_project(local_name)` — 删除项目并清理 excluded 列表
 - `cleanup_stale_projects()` — 清理 confirmed_nas_path 已失效的非 UNC 项目
 - `set_confirmed_nas(local_name, nas_path)` — 确认服务器路径绑定
-- `add_excluded(local_name, nas_path)` / `remove_excluded(local_name, nas_path)` — 排除候选管理
-- `get_active_preset_thresholds()` — 返回当前活动预设的阈值（供 QC 引擎）
 - `set_indexed_at(iso)` — 记录最近一次索引时间
 - 全局单例：`config_manager`
 
@@ -430,22 +428,16 @@ qc_bridge.open_qc_detection(file_paths, thread_count)
 - `WorkerManager` — Worker 生命周期统一管理器
   - `register(name, worker)` / `unregister(name)` / `get(name)` — 注册/注销/查询
   - `stop_all(timeout_per_worker)` — 并行发信号 + 逐个等待（含 `isRunning()` 的 RuntimeError 防护）
-  - `generation_for(tag)` / `is_stale(tag, gen)` — 陈旧结果防护
-  - `running_count()` / `names()` — 诊断
 
 ### `indexer.py`
 
 - `NASIndexer.rebuild(...)` — 全量重建（`fast=True` 仅扫项目级目录）
 - `NASIndexer.reindex_subtree(root)` — 增量重建单个子树
-- `NASIndexer.deep_scan_projects(project_roots)` — 对已添加项目逐个深度扫描
 - `NASIndexer.refresh_dir(dir_path)` — 单级增量刷新（scandir + diff + 单事务增删改），由 watcher 事件驱动；写锁超时 2s，全量扫描期间自动跳过
 - `NASIndexer.refresh_dirs(dir_paths)` — 批量增量刷新多个目录
 - `NASIndexer.query_all_folders()` — 返回所有已索引文件夹路径（匹配候选用）
 - `NASIndexer.get_folder_mtime(path, default=0.0)` — 取某文件夹自身 mtime（项目排序用）
 - `NASIndexer.list_children(parent_path)` — 直接子项（文件夹在前、按名称排序），供右栏懒加载
-- `NASIndexer.count_children(parent_path)` — 子项数量
-- `NASIndexer.get_meta(key, default="")` / `NASIndexer._set_meta(key, value)` — meta 表读写
-- `NASIndexer.clear()` — 删除整个 db 文件
 - 全局单例：`indexer`
 
 ### `watcher.py`
@@ -494,7 +486,7 @@ qc_bridge.open_qc_detection(file_paths, thread_count)
   - `detect(ctx: DetectionContext) -> dict` — 检测入口
 - `DetectionContext` — 传递给每个检测器的上下文，字段：`filepath`（视频路径，静音检测用）、`metadata`（FFprobe 元数据）、`fps`（帧率）、`thumbs`（缩略图列表 `[(frame_num, gray_160x90), ...]`）、`scanner`（FrameScanner 引用，黑边检测用）、`thresholds`（当前预设阈值）、`performance`（性能设置）
 - `DetectorRegistry` — 检测器注册表
-  - `register(detector)` / `unregister(key)` / `get(key)` / `iterate()` / `keys()`
+  - `register(detector)` / `iterate()`
 - `adapters.create_default_registry()` — 返回包含 3 个内置适配器的注册表
 
 ### 单项检测器
@@ -543,15 +535,8 @@ qc_bridge.open_qc_detection(file_paths, thread_count)
 
 > **教训**：若 `processEvents()` 在断开回调之前执行，队列中的 watcher 信号会触发 `refresh_dirs`（可能阻塞 2s 等写锁）和面板更新，导致关闭卡死。
 
-### 陈旧结果防护
-
-- 快速切换目录时，旧 `ListWorker` 的结果可能在新内容之后才到达
-- 使用 `WorkerManager.generation_for(tag)` 在启动新 Worker 前获取代数
-- 在 slot 中用 `is_stale(tag, gen)` 判断结果是否已过时，过时则丢弃
-
 ### 典型风险
 
-- 旧 `ListWorker` 结果延迟返回导致覆盖新目录内容（用 generation 防护）
 - 多个索引写任务并发造成数据库锁竞争
 - 子线程直接操作 QWidget / QPixmap 导致崩溃
 - watcher daemon 线程在 NAS 断连时可能长时间阻塞在 `ReadDirectoryChangesW` 中（无害但不可中断，进程退出时自动清理）
@@ -710,26 +695,25 @@ python -m pytest tests/test_detectors.py -v
 2. README 可能出现旧配置路径或旧分发说明
 3. 子线程共用 SQLite 连接会出问题
 4. `QPixmap` 不能在子线程创建
-5. 目录切换时要防止旧 Worker 结果回流（用 `WorkerManager.generation_for()` / `is_stale()` 防护）
-6. 根目录 `config.json` 不是主配置权威来源
-7. QC 结果每次都是实时检测，不再缓存。`storage_manager.py` 仍保留对旧 `qc_cache.db` 文件的清理能力（供用户清理历史残留）
-8. 切换 `project_mode` 会清空项目列表，改逻辑时不能丢掉确认保护
-9. 修改配置 schema 时必须同步写迁移函数并递增 `CURRENT_SCHEMA_VERSION`，不能只加默认值
-10. 新增 Worker 时必须在 `WorkerManager` 中注册，确保 `closeEvent` 能正确停止
-11. `ReadDirectoryChangesW` 返回空列表表示缓冲区溢出（事件丢失），不是"没有变更"
-12. NAS 断连后 watcher 自动重连，但断连期间的事件会丢失，需通过 `_recovery_refresh` 补偿
-13. `refresh_dir` 的 `_write_serial` 锁超时设为 2s，全量索引期间增量更新会被跳过（不影响正确性）
-14. **`CloseHandle` 不能可靠中断 NAS 上阻塞的 `ReadDirectoryChangesW`**——这是 watcher 必须用 daemon 线程 + queue 架构的根本原因。不要试图在 QThread 中直接调用 `ReadDirectoryChangesW`
-15. **`closeEvent` 必须先断开 watcher 回调再 `processEvents()`**——否则队列中的 watcher 信号会触发 `refresh_dirs`（阻塞等写锁）和面板更新，导致关闭卡死
-16. 右栏「刷新」按钮在 watcher 活跃时走轻量路径（`refresh_dir` + 同步读索引），不活跃时回退子树扫描。修改刷新逻辑时必须保留这个双路判断
-17. **QC 静音检测在注册表循环中被 skip，单独异步执行（ADR-008）**——新增检测器如果也需要与视觉管线并行（只依赖文件路径，不依赖缩略图），需要在 `analyze_file` 中类似静音检测的方式单独处理，不要仅注册到 registry 就期望它自动并行
-18. **QC 取消检测时必须清理静音 future 和 executor**——`cancel()` 设置 `_cancel_flag` 后，`analyze_file` 在循环中退出时会对 `silence_future.cancel()` 和 `silence_executor.shutdown(wait=False)`。新增的异步检测器也必须在取消路径中做同样清理
-19. **黑帧 severity 有四种：错误 / 警告 / 高危 人工复核 / 转场**——最低级从旧的"提示"改为"高危 人工复核"；当 `is_transition=True`（亮度曲线呈渐变转场特征）时 severity 为"转场"。黑帧输出新增 `frame_count` 字段（持续帧数），GUI 显示帧数而非秒数（避免短黑帧显示"0.0s"不可读）
-20. **`utils/logger.py` 和 `presets/` 目录已删除**——`logger.py` 从未被引用（项目直接用标准 `logging.getLogger()`）；`presets/` 为空包。清理时同步移除了大量无用 import（详见各文件 git 历史）
-21. **PySide6 Worker 使用 `deleteLater` 后必须清理 Python 引用**——`DeepScanWorker` 在 `finished` 信号中连接 `deleteLater`，C++ 对象被销毁后 Python 引用仍指向已死 wrapper，心跳定时器调用 `isRunning()` 会触发 `RuntimeError`。修复方式（仅 `main_window.py` 已应用）：新增 `_on_deep_scan_done()` 槽函数，在 `deleteLater` 后将 `self._deep_scan_worker = None` 并从 `WorkerManager` 注销；所有 `isRunning()` 调用处加 `try/except RuntimeError` 防护。注意 `left_sidebar.py` 中仍使用旧的 `finished.connect(worker.deleteLater)` 直接模式（该处不调用 `isRunning()`，暂未触发崩溃）；若后续在 `left_sidebar.py` 中加入 `isRunning()` 检查，需同步应用上述修复模式
-22. **`FileListView.set_entries()` 会清空 Qt 选中状态**——`beginResetModel()` 是 Qt 框架行为，SelectionModel 会立即清除所有选中索引。Watcher 变更、心跳定时器、手动刷新、Worker 完成均会触发 `set_entries()`。修复方式：在 `FileListView.set_entries()` 中先调用 `selected_paths()` 保存当前选中路径，模型重置后根据路径在新 `_row_of` 中定位行号并通过 `selectionModel().select()` 恢复
-23. **`qc_gui/main_window.py` 必须导入 `QTableWidgetItem`**——多版本对比的一致性 Tab 使用该组件构建参数对比表格，漏导会导致点击结果查看一致性时 `NameError` 崩溃
-24. **`WorkerManager.stop_all()` 和 `running_count()` 中 `isRunning()` 需 RuntimeError 防护**——Worker 的 C++ 对象被 `deleteLater` 销毁后，Python 引用仍存活，调用 `isRunning()` 触发 `RuntimeError: libshiboken: Internal C++ object already deleted`。修复：`stop_all` 中用 `try/except RuntimeError` 包裹 `isRunning()` 调用，异常时视为 `alive=False`；`running_count` 同理
+5. 根目录 `config.json` 不是主配置权威来源
+6. QC 结果每次都是实时检测，不再缓存。`storage_manager.py` 仍保留对旧 `qc_cache.db` 文件的清理能力（供用户清理历史残留）
+7. 切换 `project_mode` 会清空项目列表，改逻辑时不能丢掉确认保护
+8. 修改配置 schema 时必须同步写迁移函数并递增 `CURRENT_SCHEMA_VERSION`，不能只加默认值
+9. 新增 Worker 时必须在 `WorkerManager` 中注册，确保 `closeEvent` 能正确停止
+10. `ReadDirectoryChangesW` 返回空列表表示缓冲区溢出（事件丢失），不是"没有变更"
+11. NAS 断连后 watcher 自动重连，但断连期间的事件会丢失，需通过 `_recovery_refresh` 补偿
+12. `refresh_dir` 的 `_write_serial` 锁超时设为 2s，全量索引期间增量更新会被跳过（不影响正确性）
+13. **`CloseHandle` 不能可靠中断 NAS 上阻塞的 `ReadDirectoryChangesW`**——这是 watcher 必须用 daemon 线程 + queue 架构的根本原因。不要试图在 QThread 中直接调用 `ReadDirectoryChangesW`
+14. **`closeEvent` 必须先断开 watcher 回调再 `processEvents()`**——否则队列中的 watcher 信号会触发 `refresh_dirs`（阻塞等写锁）和面板更新，导致关闭卡死
+15. 右栏「刷新」按钮在 watcher 活跃时走轻量路径（`refresh_dir` + 同步读索引），不活跃时回退子树扫描。修改刷新逻辑时必须保留这个双路判断
+16. **QC 静音检测在注册表循环中被 skip，单独异步执行（ADR-008）**——新增检测器如果也需要与视觉管线并行（只依赖文件路径，不依赖缩略图），需要在 `analyze_file` 中类似静音检测的方式单独处理，不要仅注册到 registry 就期望它自动并行
+17. **QC 取消检测时必须清理静音 future 和 executor**——`cancel()` 设置 `_cancel_flag` 后，`analyze_file` 在循环中退出时会对 `silence_future.cancel()` 和 `silence_executor.shutdown(wait=False)`。新增的异步检测器也必须在取消路径中做同样清理
+18. **黑帧 severity 有四种：错误 / 警告 / 高危 人工复核 / 转场**——最低级从旧的"提示"改为"高危 人工复核"；当 `is_transition=True`（亮度曲线呈渐变转场特征）时 severity 为"转场"。黑帧输出新增 `frame_count` 字段（持续帧数），GUI 显示帧数而非秒数（避免短黑帧显示"0.0s"不可读）
+19. **`utils/logger.py` 和 `presets/` 目录已删除**——`logger.py` 从未被引用（项目直接用标准 `logging.getLogger()`）；`presets/` 为空包。清理时同步移除了大量无用 import（详见各文件 git 历史）
+20. **PySide6 Worker 使用 `deleteLater` 后必须清理 Python 引用**——`DeepScanWorker` 在 `finished` 信号中连接 `deleteLater`，C++ 对象被销毁后 Python 引用仍指向已死 wrapper，心跳定时器调用 `isRunning()` 会触发 `RuntimeError`。修复方式（仅 `main_window.py` 已应用）：新增 `_on_deep_scan_done()` 槽函数，在 `deleteLater` 后将 `self._deep_scan_worker = None` 并从 `WorkerManager` 注销；所有 `isRunning()` 调用处加 `try/except RuntimeError` 防护。注意 `left_sidebar.py` 中仍使用旧的 `finished.connect(worker.deleteLater)` 直接模式（该处不调用 `isRunning()`，暂未触发崩溃）；若后续在 `left_sidebar.py` 中加入 `isRunning()` 检查，需同步应用上述修复模式
+21. **`FileListView.set_entries()` 会清空 Qt 选中状态**——`beginResetModel()` 是 Qt 框架行为，SelectionModel 会立即清除所有选中索引。Watcher 变更、心跳定时器、手动刷新、Worker 完成均会触发 `set_entries()`。修复方式：在 `FileListView.set_entries()` 中先调用 `selected_paths()` 保存当前选中路径，模型重置后根据路径在新 `_row_of` 中定位行号并通过 `selectionModel().select()` 恢复
+22. **`qc_gui/main_window.py` 必须导入 `QTableWidgetItem`**——多版本对比的一致性 Tab 使用该组件构建参数对比表格，漏导会导致点击结果查看一致性时 `NameError` 崩溃
+23. **`WorkerManager.stop_all()` 中 `isRunning()` 需 RuntimeError 防护**——Worker 的 C++ 对象被 `deleteLater` 销毁后，Python 引用仍存活，调用 `isRunning()` 触发 `RuntimeError: libshiboken: Internal C++ object already deleted`。修复：`stop_all` 中用 `try/except RuntimeError` 包裹 `isRunning()` 调用，异常时视为 `alive=False`
 
 ---
 

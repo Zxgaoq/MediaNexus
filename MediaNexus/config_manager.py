@@ -293,12 +293,6 @@ class ConfigManager:
             self._data["qc_active_preset"] = value
         self.save()
 
-    def get_active_preset_thresholds(self) -> dict:
-        """返回当前活动预设的阈值，供 QC 引擎使用。"""
-        name = self.qc_active_preset
-        preset = self.qc_presets.get(name, {})
-        return preset.get("thresholds", {})
-
     # --------------------------- 项目 CRUD ---------------------------
     def get_project(self, local_name: str) -> dict | None:
         for p in self._projects_list():
@@ -385,23 +379,6 @@ class ConfigManager:
             proj["confirmed_nas_path"] = nas_path
             from datetime import datetime
             proj["last_sync"] = datetime.now().isoformat(timespec="seconds")
-        self.save()
-
-    def add_excluded(self, local_name: str, nas_path: str) -> None:
-        """将一个 NAS 候选加入该项目的排除列表。"""
-        with self._lock:
-            excluded = self.settings.setdefault("excluded", {})
-            lst = excluded.setdefault(local_name, [])
-            if nas_path not in lst:
-                lst.append(nas_path)
-        self.save()
-
-    def remove_excluded(self, local_name: str, nas_path: str) -> None:
-        with self._lock:
-            excluded = self.settings.get("excluded", {})
-            lst = excluded.get(local_name, [])
-            if nas_path in lst:
-                lst.remove(nas_path)
         self.save()
 
     def set_indexed_at(self, iso: str) -> None:

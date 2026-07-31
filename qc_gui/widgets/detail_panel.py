@@ -3,7 +3,7 @@
 """
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QTabWidget, QTreeWidget, QTableWidget,
-    QTextEdit, QPlainTextEdit, QHeaderView,
+    QTextEdit, QPlainTextEdit,
 )
 
 

@@ -16,7 +16,7 @@ from PySide6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
     QTreeWidget, QTreeWidgetItem, QHeaderView, QFileDialog,
     QMessageBox, QProgressBar, QListWidget, QListWidgetItem,
-    QAbstractItemView, QWidget, QApplication, QCheckBox,
+    QAbstractItemView, QWidget, QCheckBox,
 )
 from PySide6.QtCore import Qt, QThread, Signal
 from PySide6.QtGui import QDragEnterEvent, QDropEvent, QColor
@@ -396,8 +396,6 @@ class MultiVersionCompareDialog(QDialog):
                 top_item.setExpanded(True)
 
         # 一致组全部展开（方便查看），不一致组已展开
-        # 全部展开便于浏览
-        # self.result_tree.expandAll()
 
     def _create_top_item(self, group: GroupResult, version_names: List[str]) -> QTreeWidgetItem:
         """创建顶层行：编号 + ✓/✗ + 状态"""

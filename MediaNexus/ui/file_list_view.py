@@ -807,7 +807,7 @@ class FileListView(QWidget):
 
     # ---- 右键菜单 ----
     def _on_context_menu(self, event) -> None:
-        from PySide6.QtWidgets import QInputDialog, QMessageBox
+        from PySide6.QtWidgets import QMessageBox
 
         view = self._active_view()
         index = view.indexAt(event.pos())

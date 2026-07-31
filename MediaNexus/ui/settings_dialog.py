@@ -22,7 +22,6 @@ from PySide6.QtWidgets import (
     QLabel,
     QLineEdit,
     QListWidget,
-    QListWidgetItem,
     QMessageBox,
     QProgressDialog,
     QPushButton,
@@ -58,7 +57,7 @@ class SettingsDialog(QDialog):
         tabs = QTabWidget()
 
         # ═══════════════════ 通用 ═══════════════════
-        general_tab = QWidget()
+        QWidget()
         gen_scroll = QScrollArea()
         gen_scroll.setWidgetResizable(True)
         gen_container = QWidget()
@@ -286,7 +285,7 @@ class SettingsDialog(QDialog):
         tabs.addTab(comp_tab, "组件")
 
         # ═══════════════════ 缓存 ═══════════════════
-        cache_tab = QWidget()
+        QWidget()
         cache_scroll = QScrollArea()
         cache_scroll.setWidgetResizable(True)
         cache_container = QWidget()

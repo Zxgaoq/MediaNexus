@@ -11,6 +11,3 @@ class StatusBar(QStatusBar):
         super().__init__(parent)
         self.status_label = QLabel("就绪")
         self.addWidget(self.status_label)
-
-    def set_status(self, text):
-        self.status_label.setText(text)

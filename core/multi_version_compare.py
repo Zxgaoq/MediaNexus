@@ -182,7 +182,7 @@ class MultiVersionComparator:
     @staticmethod
     def _estimate_frame_count(info: dict, duration: Optional[float], fps: Optional[float]) -> Optional[int]:
         """估算帧数：优先取 FFprobe 流级 nb_frames，否则 duration*fps"""
-        video = info.get("video") or {}
+        info.get("video") or {}
         # 流级 nb_frames
         raw_streams = info.get("_raw_streams", info.get("streams", []))
         if isinstance(raw_streams, list):

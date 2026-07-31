@@ -553,7 +553,7 @@ class MainWindow(QMainWindow):
             return
         self._current_project = proj
         local_path = proj.get("local_path", "")
-        confirmed = proj.get("confirmed_nas_path", "")
+        proj.get("confirmed_nas_path", "")
         self.middle.load(local_path, no_local=not local_path)
         self.right.load(proj)
 
@@ -646,7 +646,7 @@ class MainWindow(QMainWindow):
         open_manual(self)
 
     def _about(self):
-        from PySide6.QtWidgets import QDialog, QLabel, QVBoxLayout, QDialogButtonBox, QScrollArea
+        from PySide6.QtWidgets import QDialog, QVBoxLayout, QDialogButtonBox, QScrollArea
         dlg = QDialog(self)
         dlg.setWindowTitle(f"关于 {APP_NAME}")
         dlg.setMinimumSize(460, 560)
@@ -703,9 +703,9 @@ class MainWindow(QMainWindow):
         info = QLabel(
             "<hr style='border:none; border-top:1px solid #E5E7EB; margin:8px 0;'>"
             "<p style='text-align:center; font-size:12px; color:#6B7280;'>"
-            f"作者：Zxgaoq<br>"
-            f"BUG 反馈：3096959163@qq.com<br>"
-            f"联系作者：AboutZxgaoq"
+            "作者：Zxgaoq<br>"
+            "BUG 反馈：3096959163@qq.com<br>"
+            "联系作者：AboutZxgaoq"
             "</p>"
         )
         info.setTextFormat(Qt.RichText)

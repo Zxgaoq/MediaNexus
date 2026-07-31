@@ -794,19 +794,3 @@ def get_drop_area_stylesheet(state="normal"):
             padding: 20px;
         }}
     """
-
-
-def get_status_label_style(status):
-    """获取状态标签的样式表"""
-    s = get_status_style(status)
-    return f"""
-        QLabel {{
-            background-color: {s["bg"]};
-            color: {s["text"]};
-            border: 1px solid {s["border"]};
-            border-radius: 12px;
-            padding: 4px 14px;
-            font-weight: 600;
-            font-size: 12px;
-        }}
-    """

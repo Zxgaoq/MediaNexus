@@ -6,8 +6,6 @@
 - 真黑边宽度从段开始到结束绝不改变，众数出现率 ≥ 90%
 - 暗场景/阴影宽度逐帧变化，众数出现率低，自动过滤
 """
-import os
-import cv2
 import numpy as np
 import logging
 from collections import Counter
@@ -57,77 +55,6 @@ class BlackBorderDetector:
         self.mode_ratio_min = mode_ratio_min
         self.min_segment_frames = min_segment_frames
         self.black_frame_skip_threshold = black_frame_skip_threshold
-
-    # ── 独立检测入口（向后兼容，内部使用 detect_frame） ──
-
-    def detect(self, video_path, timeout=600):
-        """
-        独立逐帧扫描检测（向后兼容，v3架构下通常由 FrameScanner 在线检测替代）。
-        策略：自适应采样 + 缩放480px + detect_frame 悬崖探测 + _build_segments 众数过滤
-        """
-        if not os.path.isfile(video_path):
-            raise FileNotFoundError(f"文件不存在: {video_path}")
-
-        cap = cv2.VideoCapture(video_path)
-        if not cap.isOpened():
-            raise RuntimeError(f"无法打开视频: {video_path}")
-
-        total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)) or 0
-        fps = cap.get(cv2.CAP_PROP_FPS) or 25.0
-        orig_w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)) or 1920
-        orig_h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) or 1080
-        duration_sec = total_frames / fps if fps > 0 else 0
-
-        if duration_sec <= 300:
-            frame_step = 1
-        elif duration_sec <= 900:
-            frame_step = 2
-        else:
-            frame_step = 4
-
-        scale = min(1.0, 480.0 / max(orig_w, orig_h))
-        scan_w = max(1, int(orig_w * scale))
-        scan_h = max(1, int(orig_h * scale))
-
-        logger.info(
-            f"黑边检测(v3): {os.path.basename(video_path)} "
-            f"({orig_w}x{orig_h}, {total_frames}f, {fps:.1f}fps, {duration_sec:.0f}s) "
-            f"采样步长={frame_step}, 缩放={scan_w}x{scan_h}, scale={scale:.2f}"
-        )
-
-        frame_records = []
-        frame_num = 0
-
-        try:
-            while True:
-                ret, frame = cap.read()
-                if not ret or frame is None:
-                    break
-                frame_num += 1
-
-                if (frame_num - 1) % frame_step != 0:
-                    continue
-
-                if scale < 1.0:
-                    frame = cv2.resize(frame, (scan_w, scan_h), interpolation=cv2.INTER_AREA)
-
-                gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-
-                if np.mean(gray) < self.black_frame_skip_threshold:
-                    continue
-
-                border = self.detect_frame(gray, scan_w, scan_h, scale)
-
-                if border["has_border"]:
-                    frame_records.append((frame_num, border))
-        except Exception as e:
-            logger.error(f"黑边检测异常: {e}")
-        finally:
-            cap.release()
-
-        logger.info(f"黑边扫描完成: {frame_num} 帧，{len(frame_records)} 帧有黑边")
-
-        return self._build_segments(frame_records, fps, frame_step, orig_w, orig_h, total_frames)
 
     # ── 核心算法：单帧悬崖探测 ──
 

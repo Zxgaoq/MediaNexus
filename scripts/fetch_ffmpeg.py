@@ -80,7 +80,7 @@ def _extract(archive_path: str):
     found = {}
 
     # 优先尝试 .7z（需 py7zr）
-    if zip_path.endswith(".7z"):
+    if archive_path.endswith(".7z"):
         try:
             import py7zr  # type: ignore
         except Exception:

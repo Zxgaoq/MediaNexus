@@ -81,7 +81,7 @@ class SilenceDetector:
                 if HAS_LIBROSA:
                     segments = self._detect_with_librosa(video_path)
                 else:
-                    logger.error(f"librosa 不可用，静音检测完全失败")
+                    logger.error("librosa 不可用，静音检测完全失败")
                     return {
                         "has_silence": False,
                         "segments": [],

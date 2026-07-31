@@ -149,7 +149,7 @@ class MatchWorker(QThread):
             name = p.get("name") or os.path.basename(server_path.rstrip("/\\"))
             local_path = p.get("local_path", "")
             confirmed = p.get("confirmed_nas_path", "")
-            stored_candidates = p.get("nas_candidates", [])
+            p.get("nas_candidates", [])
 
             # 匹配缓存：非手动触发且项目已有确认路径 → 跳过匹配，保留已有本地路径不变
             if not explicit_rematch and confirmed and os.path.isdir(confirmed):
@@ -306,7 +306,7 @@ class CopyWorker(QThread):
                 else:
                     shutil.copy2(src, dst)
                 ok += 1
-            except (OSError, shutil.Error) as e:  # noqa: BLE001
+            except (OSError, shutil.Error):  # noqa: BLE001
                 fail += 1
         self.finished.emit(ok, fail)
 
@@ -342,7 +342,7 @@ class MoveWorker(QThread):
                     continue
                 shutil.move(src, dst)
                 ok += 1
-            except (OSError, shutil.Error) as e:  # noqa: BLE001
+            except (OSError, shutil.Error):  # noqa: BLE001
                 fail += 1
         self.finished.emit(ok, fail)
 

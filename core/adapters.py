@@ -11,9 +11,8 @@
 """
 from __future__ import annotations
 
-from .base_detector import BaseDetector, DetectionContext
+from .base_detector import BaseDetector, DetectionContext, DetectorRegistry
 from .black_frame import BlackFrameDetector
-from .black_border import BlackBorderDetector
 from .silence_detect import SilenceDetector
 from utils.config import DEFAULT_THRESHOLDS
 
@@ -71,8 +70,6 @@ class SilenceAdapter(BaseDetector):
 
 def create_default_registry() -> "DetectorRegistry":
     """创建包含所有内置检测器的注册表。"""
-    from .base_detector import DetectorRegistry
-
     registry = DetectorRegistry()
     registry.register(BlackFrameAdapter())
     registry.register(BlackBorderAdapter())

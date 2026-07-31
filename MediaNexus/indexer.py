@@ -565,60 +565,12 @@ class NASIndexer:
         finally:
             conn.close()
 
-    def count_children(self, parent_path: str) -> int:
-        conn = self._open_ro()
-        if not conn:
-            return 0
-        try:
-            cur = conn.execute(
-                "SELECT COUNT(*) FROM entries WHERE parent=?", (parent_path,)
-            )
-            return cur.fetchone()[0]
-        finally:
-            conn.close()
-
-    def get_meta(self, key: str, default: str = "") -> str:
-        conn = self._open_ro()
-        if not conn:
-            return default
-        try:
-            cur = conn.execute("SELECT value FROM meta WHERE key=?", (key,))
-            row = cur.fetchone()
-            return row[0] if row else default
-        finally:
-            conn.close()
-
     def _set_meta(self, key: str, value: str) -> None:
         self._conn.execute(
             "INSERT OR REPLACE INTO meta(key,value) VALUES(?,?)", (key, value)
         )
         self._conn.commit()
 
-    def deep_scan_projects(self, project_roots: list[str]) -> dict:
-        """
-        对已添加的项目进行深度扫描（递归子树）。
-        在 shallow rebuild 之后调用，逐步补充各个项目的完整内容。
-        """
-        logger.info(f"[deep_scan] 开始: {len(project_roots)} 个项目")
-        start = datetime.now()
-        total = {"dirs": 0, "files": 0, "errors": 0}
-        for root in project_roots:
-            res = self.reindex_subtree(root)
-            for k in total:
-                total[k] += res.get(k, 0)
-        elapsed = (datetime.now() - start).total_seconds()
-        logger.info(
-            f"[deep_scan] 完成: dirs={total['dirs']}, files={total['files']}, "
-            f"errors={total['errors']}, elapsed={elapsed:.1f}s"
-        )
-        return total
-
-    def clear(self) -> None:
-        if Path(self.db_path).exists():
-            try:
-                Path(self.db_path).unlink()
-            except OSError:
-                pass
 
 
 # 全局索引器单例

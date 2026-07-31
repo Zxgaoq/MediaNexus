@@ -253,7 +253,7 @@ class FFmpegManager:
             urllib.request.urlretrieve(url, dest, _reporthook)
         except _CancelDownload:
             return False
-        except Exception as e:
+        except Exception:
             logger.exception("下载失败")
             raise
         return True

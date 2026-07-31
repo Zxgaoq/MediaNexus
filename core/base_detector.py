@@ -84,18 +84,6 @@ class DetectorRegistry:
         self._by_key[detector.key] = detector
         logger.debug(f"已注册检测器: {detector.key} ({detector.name})")
 
-    def unregister(self, key: str) -> None:
-        """移除指定 key 的检测器。"""
-        self._detectors = [d for d in self._detectors if d.key != key]
-        self._by_key.pop(key, None)
-
-    def get(self, key: str) -> BaseDetector | None:
-        """按 key 获取检测器。"""
-        return self._by_key.get(key)
-
     def iterate(self) -> list[BaseDetector]:
         """按注册顺序返回所有检测器。"""
         return list(self._detectors)
-
-    def keys(self) -> list[str]:
-        return [d.key for d in self._detectors]

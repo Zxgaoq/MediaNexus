@@ -5,8 +5,6 @@
 支持黑转场识别：通过亮度梯度分析区分有意淡入淡出与内容缺失错误。
 """
 
-import os
-import cv2
 import numpy as np
 import logging
 
@@ -28,111 +26,6 @@ class BlackFrameDetector:
         """
         self.threshold = threshold
         self.min_duration = min_duration
-
-    def detect(self, video_path, sample_interval=1, timeout=600):
-        """
-        逐帧检测黑帧
-
-        策略：
-        - 视频 <= 5 分钟: 逐帧扫描（不丢任何帧）
-        - 视频 > 5 分钟: 每 sample_interval 帧检查一帧（但逐帧读取保证定位准确）
-
-        使用 160x90 缩略图计算均值，速度极快（<0.01ms/帧）。
-
-        Args:
-            video_path: 视频文件路径
-            sample_interval: 检查间隔帧数（默认1=逐帧）
-            timeout: 超时（参考值）
-
-        Returns:
-            dict: {has_black_frames, segments, total_black_frames, frames_checked, fps}
-        """
-        if not os.path.isfile(video_path):
-            raise FileNotFoundError(f"文件不存在: {video_path}")
-
-        cap = cv2.VideoCapture(video_path)
-        if not cap.isOpened():
-            raise RuntimeError(f"无法打开视频文件: {video_path}")
-
-        fps = cap.get(cv2.CAP_PROP_FPS) or 25.0
-        total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)) or 0
-        duration = total_frames / fps if fps > 0 else 0
-
-        # 长视频自适应降低检查密度
-        if duration > 300:  # 5 分钟以上
-            sample_interval = 2
-        if duration > 1800:  # 30 分钟以上
-            sample_interval = 5
-
-        logger.info(
-            f"黑帧检测: {os.path.basename(video_path)} "
-            f"({duration:.0f}s, {total_frames}f, fps={fps:.1f}, "
-            f"阈值={self.threshold}, 检查间隔={sample_interval})"
-        )
-
-        black_segments = []
-        total_black = 0
-        frames_checked = 0
-        current_segment = None
-        frame_num = 0
-
-        try:
-            while True:
-                ret, frame = cap.read()
-                if not ret or frame is None:
-                    break
-
-                frame_num += 1
-
-                # 按间隔决定是否检查当前帧
-                if frame_num % sample_interval != 0:
-                    continue
-
-                frames_checked += 1
-
-                # 降分辨率快速计算均值：160x90 = 14400 像素，比全分辨率快 100+ 倍
-                thumb = cv2.resize(frame, (160, 90), interpolation=cv2.INTER_NEAREST)
-                gray = cv2.cvtColor(thumb, cv2.COLOR_BGR2GRAY)
-                mean_pixel = float(np.mean(gray))
-
-                if mean_pixel < self.threshold:
-                    total_black += 1
-                    if current_segment is None:
-                        current_segment = {
-                            "start_frame": frame_num,
-                            "end_frame": frame_num,
-                        }
-                    else:
-                        current_segment["end_frame"] = frame_num
-                else:
-                    if current_segment is not None:
-                        seg = self._finalize_segment(current_segment, fps, sample_interval)
-                        if seg:
-                            black_segments.append(seg)
-                        current_segment = None
-
-        except Exception as e:
-            logger.error(f"黑帧检测异常: {e}")
-            import traceback; traceback.print_exc()
-        finally:
-            cap.release()
-
-        # 最后一个片段
-        if current_segment is not None:
-            seg = self._finalize_segment(current_segment, fps, sample_interval)
-            if seg:
-                black_segments.append(seg)
-
-        result = {
-            "has_black_frames": len(black_segments) > 0,
-            "segments": black_segments,
-            "total_black_frames": total_black * sample_interval,  # 还原实际数量
-            "frames_checked": frames_checked,
-            "fps": round(fps, 2),
-        }
-
-        logger.info(f"黑帧检测完成: 扫描 {frames_checked} 帧, 发现 {len(black_segments)} 个黑帧段落")
-        return result
 
     def _finalize_segment(self, seg, fps, sample_interval, thumbs_dict=None):
         """完成片段：还原真实帧范围，计算时长和严重程度，检测转场"""

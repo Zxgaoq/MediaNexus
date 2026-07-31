@@ -14,8 +14,8 @@ from datetime import datetime
 
 from PySide6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-    QLabel, QPushButton, QListWidgetItem, QSplitter,
-    QFileDialog, QMessageBox, QTreeWidget, QTreeWidgetItem,
+    QLabel, QListWidgetItem, QSplitter,
+    QFileDialog, QMessageBox, QTreeWidgetItem,
     QHeaderView, QApplication, QTableWidgetItem,
 )
 from PySide6.QtCore import Qt, Signal, QThread
@@ -159,7 +159,6 @@ class ExpandStrip(QWidget):
         self.setStyleSheet("")
         self.style().unpolish(self)
         self.style().polish(self)
-        super().leaveEvent(event)
         super().leaveEvent(event)
 
     def mouseReleaseEvent(self, event):
@@ -424,7 +423,7 @@ class MainWindow(QMainWindow):
         # 工具菜单
         tools_menu = menu_bar.addMenu("工具(&T)")
         tools_menu.addAction("环境检查(&V)", "Ctrl+Shift+V", self._check_environment)
-        
+
         # 帮助菜单（使用手册统一由主程序「帮助」菜单提供，避免重复）
         help_menu = menu_bar.addMenu("帮助(&H)")
         help_menu.addAction("关于(&A)", self._show_about)
@@ -669,11 +668,6 @@ class MainWindow(QMainWindow):
                     import ctypes
                     # Windows 任务栏闪烁（FLASHW_ALL = 标题栏 + 任务栏）
                     hwnd = int(self.winId())
-                    flash_info = ctypes.Structure(
-                        "FLASHWINFO",
-                        ctypes.POINTER(ctypes.c_ulong),  # cbSize
-                    )
-                    # 使用更简单的方式
                     from ctypes import wintypes
                     user32 = ctypes.windll.user32
 
@@ -713,8 +707,8 @@ class MainWindow(QMainWindow):
             if not result or not isinstance(result, dict):
                 continue
             meta = result.get("metadata") or {}
-            video = meta.get("video") or {}
-            audio = meta.get("audio") or {}
+            meta.get("video") or {}
+            meta.get("audio") or {}
             status = result.get("overall_status", "pending")
 
             # 检测项目状态
@@ -757,7 +751,7 @@ class MainWindow(QMainWindow):
             item.setData(0, Qt.ItemDataRole.UserRole, self.result_tree.topLevelItemCount())
 
             # 根据状态着色
-            style = get_status_style(status)
+            get_status_style(status)
             for col in range(7):
                 item.setBackground(col, Qt.GlobalColor.transparent)
 
@@ -984,7 +978,7 @@ class MainWindow(QMainWindow):
 
         # 黑边
         bb = result.get("black_border", {})
-        text.append(f"### 🖼 黑边检测")
+        text.append("### 🖼 黑边检测")
         text.append(f"- 扫描帧数: {bb.get('frames_checked', 0)} (总帧数: {bb.get('total_frames', '?')})")
         text.append(f"- 分辨率: {bb.get('resolution', '?')}")
         bb_segs = bb.get("segments", [])
@@ -1076,14 +1070,6 @@ class MainWindow(QMainWindow):
         self.consistency_tab.resizeColumnsToContents()
         self.consistency_tab.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
 
-    @staticmethod
-    def _light_color(hex_color):
-        """创建半透明背景色"""
-        from PySide6.QtGui import QColor
-        c = QColor(hex_color)
-        c.setAlpha(120)
-        return c
-
     # ========== 导出 ==========
     def _export_excel(self):
         if not self._results:
@@ -1109,74 +1095,6 @@ class MainWindow(QMainWindow):
             self._on_log_ui(f"📥 报表已导出: {path}")
         except Exception as e:
             QMessageBox.critical(self, "导出失败", f"导出过程出错:\n{e}")
-
-    # ========== 缓存管理 ==========
-    def _clear_cache(self):
-        """清除所有缓存文件（临时音频、截图残留、旧日志）"""
-        # 先查询缓存信息
-        info = self.storage.get_cache_info()
-
-        # 构建确认对话框
-        msg = (
-            f"<h3>缓存清理确认</h3>"
-            f"<p>当前缓存占用情况：</p>"
-            f"<table>"
-            f"<tr><td>📋 日志文件:</td><td><b>{info['log_count']}</b> 个</td>"
-            f"<td>({info['log_size_mb']:.1f} MB)</td></tr>"
-            f"<tr><td>💾 临时缓存:</td><td><b>{info['cache_file_count']}</b> 个文件</td>"
-            f"<td>({info['cache_size_mb']:.1f} MB)</td></tr>"
-        )
-
-        if info["total_size_mb"] < 0.01 and info["log_count"] == 0 and info["cache_file_count"] == 0:
-            msg += "</table><p>✅ 当前没有缓存文件需要清理。</p>"
-            QMessageBox.information(self, "缓存清理", msg)
-            return
-
-        msg += (
-            f"<tr style='font-weight:bold;'><td>📦 合计:</td><td></td>"
-            f"<td style='color:#EA4335'>{info['total_size_mb']:.1f} MB</td></tr>"
-            f"</table>"
-            f"<p style='color:#EA4335; font-weight:bold;'>⚠ 此操作将删除以下内容：</p>"
-            f"<ul>"
-            f"<li>所有临时音频提取文件（data/cache/audio/）</li>"
-            f"<li>超过 30 天的旧日志文件（保留最近 5 个）</li>"
-            f"<li>其他临时缓存文件</li>"
-            f"</ul>"
-            f"<p><b>不会影响：</b>配置文件、预设、导出的报表、保存的结果。</p>"
-            f"<p>确定要继续吗？</p>"
-        )
-
-        reply = QMessageBox.question(
-            self, "清除缓存", msg,
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-            QMessageBox.StandardButton.No
-        )
-
-        if reply != QMessageBox.StandardButton.Yes:
-            return
-
-        # 执行清除
-        self.status_label.setText("正在清除缓存...")
-        result = self.storage.clear_cache(keep_recent_logs=5, max_log_age_days=30)
-
-        # 结果反馈
-        if result["errors"]:
-            err_detail = "\n".join(result["errors"][:3])
-            QMessageBox.warning(
-                self, "缓存清理 - 部分完成",
-                f"已清除 {result['deleted_files']} 个文件，释放 {result['freed_mb']:.1f} MB\n\n"
-                f"部分文件无法删除:\n{err_detail}"
-            )
-        else:
-            QMessageBox.information(
-                self, "缓存清理完成",
-                f"✅ 已清除 {result['deleted_files']} 个文件"
-                f"{' + ' + str(result['deleted_dirs']) + ' 个目录' if result['deleted_dirs'] else ''}\n"
-                f"💾 释放空间: {result['freed_mb']:.1f} MB"
-            )
-
-        self.status_label.setText(f"缓存已清理，释放 {result['freed_mb']:.1f} MB")
-        self._on_log_ui(f"🗑 缓存已清理: 删除 {result['deleted_files']} 个文件, 释放 {result['freed_mb']:.1f} MB")
 
     def _open_multi_version_compare(self):
         """打开多版本对比对话框"""

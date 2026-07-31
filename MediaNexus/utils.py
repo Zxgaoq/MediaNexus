@@ -1,17 +1,12 @@
 # -*- coding: utf-8 -*-
 """
 MediaNexus - 通用工具函数
-包含：路径安全处理、人类可读大小、重试装饰器、文件名合法性校验等。
+包含：路径安全处理、人类可读大小、文件操作、资源路径等。
 """
 from __future__ import annotations
 
-import functools
 import os
 import sys
-import time
-from typing import Callable, TypeVar
-
-T = TypeVar("T")
 
 
 def human_readable_size(num_bytes: int) -> str:
@@ -28,61 +23,9 @@ def human_readable_size(num_bytes: int) -> str:
     return f"{size:.1f} PB"
 
 
-def normalize_path(path: str) -> str:
-    """
-    规范化路径：统一为正斜杠、展开用户目录、解析父引用。
-    对 UNC 路径（\\server\\share）保留原样（normpath 不会破坏 UNC）。
-    """
-    if not path:
-        return ""
-    p = os.path.expanduser(path)
-    # ntpath.normpath 能正确处理 Windows / UNC 路径
-    p = os.path.normpath(p)
-    return p
-
-
 def is_unc_path(path: str) -> bool:
     """判断是否为 UNC 网络路径（\\server\\share）。"""
     return bool(path) and (path.startswith("\\\\") or path.startswith("//"))
-
-
-def safe_filename(name: str) -> str:
-    """生成一个安全的纯 ASCII 文件名片段，用于缓存/日志等（不影响真实路径）。"""
-    import re
-    keep = re.sub(r'[\\/:*?"<>|\r\n\t]+', "_", name)
-    return keep[:60]
-
-
-def retry(
-    times: int = 3,
-    interval: float = 1.0,
-    exceptions: tuple = (OSError, PermissionError),
-    on_fail: Callable[[Exception, int], None] | None = None,
-):
-    """
-    简单同步重试装饰器：被装饰函数在抛出指定异常时自动重试。
-    :param on_fail: 每次失败后的回调 (exc, attempt)，可用于 UI 提示。
-    """
-
-    def decorator(func: Callable[..., T]) -> Callable[..., T]:
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs) -> T:
-            last_exc: Exception | None = None
-            for attempt in range(1, times + 1):
-                try:
-                    return func(*args, **kwargs)
-                except exceptions as exc:  # noqa: B902
-                    last_exc = exc
-                    if on_fail:
-                        on_fail(exc, attempt)
-                    if attempt < times:
-                        time.sleep(interval)
-            assert last_exc is not None
-            raise last_exc
-
-        return wrapper
-
-    return decorator
 
 
 def list_dir_safe(path: str, ignore_patterns: list[str] | None = None) -> list[dict]:

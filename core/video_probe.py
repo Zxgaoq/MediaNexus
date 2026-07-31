@@ -234,7 +234,7 @@ class VideoProbe:
             "mpeg": "MPEG", "mpegts": "TS", "ts": "TS", "m2ts": "M2TS",
             "mts": "MTS", "vob": "VOB", "ogv": "OGV", "rm": "RMVB",
             "rmvb": "RMVB", "divx": "DIVX", "dv": "DV", "mxf": "MXF",
-            "mpj2": "MPJ2", "avi": "AVI", "mpeg1video": "MPEG-1",
+            "mpj2": "MPJ2", "mpeg1video": "MPEG-1",
             "mpeg2video": "MPEG-2", "mpegvideo": "MPEG",
             "rawvideo": "RAW", "h264": "H.264", "hevc": "H.265",
         }

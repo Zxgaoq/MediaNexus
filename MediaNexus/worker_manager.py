@@ -48,26 +48,6 @@ class WorkerManager:
         """注销并返回 Worker 引用（不停止）。"""
         return self._workers.pop(name, None)
 
-    def get(self, name: str) -> QThread | None:
-        """获取已注册的 Worker。"""
-        return self._workers.get(name)
-
-    # ── 陈旧结果防护 ──
-
-    def generation_for(self, tag: str) -> int:
-        """获取指定 tag 的当前代数并自增。
-
-        用法：在启动新 Worker 前调用，保存返回的 gen 值。
-        在 slot 回调中用 is_stale(tag, gen) 判断结果是否已过时。
-        """
-        gen = self._generations.get(tag, 0)
-        self._generations[tag] = gen + 1
-        return gen
-
-    def is_stale(self, tag: str, gen: int) -> bool:
-        """判断给定代数是否已过时（有更新的 Worker 已启动）。"""
-        return self._generations.get(tag, 0) > gen + 1
-
     # ── 统一停止 ──
 
     def stop_all(self, timeout_per_worker: int = 1500) -> int:
@@ -108,20 +88,3 @@ class WorkerManager:
 
         logger.info(f"WorkerManager: 已停止 {stopped}/{len(running)} 个 Worker")
         return stopped
-
-    # ── 诊断 ──
-
-    def running_count(self) -> int:
-        """当前运行中的 Worker 数量。"""
-        count = 0
-        for w in self._workers.values():
-            try:
-                if w and w.isRunning():
-                    count += 1
-            except RuntimeError:
-                pass  # C++ 对象已销毁
-        return count
-
-    def names(self) -> list[str]:
-        """所有已注册的 Worker 名称。"""
-        return list(self._workers.keys())

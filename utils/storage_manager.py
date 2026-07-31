@@ -41,10 +41,6 @@ class StorageManager:
         return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     @property
-    def base_dir(self):
-        return self._base_dir
-
-    @property
     def data_dir(self):
         return os.path.join(self._base_dir, "data")
 
@@ -68,10 +64,6 @@ class StorageManager:
     def config_path(self):
         return os.path.join(self._base_dir, "config.json")
 
-    @property
-    def resources_dir(self):
-        return os.path.join(self._base_dir, "resources")
-
     # ---- 目录初始化 ----
 
     def _ensure_dirs(self):
@@ -92,22 +84,6 @@ class StorageManager:
             parent = os.path.dirname(path)
             os.makedirs(parent, exist_ok=True)
         return path
-
-    def get_log_path(self, filename=None):
-        """
-        获取日志文件路径
-        """
-        if filename is None:
-            filename = f"videoqc_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
-        return os.path.join(self.logs_dir, filename)
-
-    def get_export_path(self, filename=None):
-        """
-        获取导出文件路径
-        """
-        if filename is None:
-            filename = f"VideoQC_Report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
-        return os.path.join(self.exports_dir, filename)
 
     # ---- 缓存信息 ----
 
@@ -392,11 +368,6 @@ class StorageManager:
         result["freed_mb"] = round(result["freed_mb"], 2)
         return result
 
-    def _clear_old_logs(self, max_age_days: int, keep_recent: int) -> dict:
-        """清除旧日志。复用现有逻辑。"""
-        return self.clear_cache(keep_recent_logs=keep_recent,
-                                max_log_age_days=max_age_days)
-
     def _get_qc_cache_path(self) -> str:
         try:
             from MediaNexus.constants import CONFIG_DIR
@@ -417,10 +388,6 @@ class StorageManager:
             return str(CONFIG_DIR / "crash.log")
         except Exception:
             return os.path.join(os.environ.get("APPDATA", ""), "MediaNexus", "crash.log")
-
-    def _get_temp_dir(self) -> str:
-        import tempfile
-        return tempfile.gettempdir()
 
     def _dir_size(self, path):
         """递归计算目录大小"""

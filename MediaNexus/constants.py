@@ -12,7 +12,6 @@ from pathlib import Path
 # ----------------------------- 应用元信息 -----------------------------
 APP_NAME = "影枢"
 APP_VERSION = "1.0.0"
-APP_AUTHOR = "Zxgaoq"
 
 # --------------------- SpinBox 箭头（运行时生成，兼容打包） ---------------------
 # PyInstaller onedir 模式下 Qt 样式表里的相对文件路径会失效，且 data: URI
@@ -110,14 +109,6 @@ STATUS_MATCHED = "matched"      # 已匹配
 STATUS_PENDING = "pending"      # 待确认
 STATUS_UNMATCHED = "unmatched"  # 未匹配
 STATUS_NONE = "none"            # 无匹配项（未选择服务器目录）
-
-# 状态图标
-STATUS_ICON = {
-    STATUS_MATCHED: "\u2713",    # ✓
-    STATUS_PENDING: "?",         # ?
-    STATUS_UNMATCHED: "\u2014",  # —
-    STATUS_NONE: "\u2014",       # —
-}
 
 STATUS_COLOR = {
     STATUS_MATCHED: "#16A34A",

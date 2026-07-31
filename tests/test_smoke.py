@@ -251,7 +251,7 @@ def test_refresh_dir_removes_directory_subtree():
         # 删除整个子目录
         shutil.rmtree(sub)
 
-        result = idx2.refresh_dir(root)
+        idx2.refresh_dir(root)
         # 检查子树条目已被清除
         kids_after = idx2.list_children(root)
         names_after = [k["name"] for k in kids_after]
@@ -275,7 +275,7 @@ def test_watcher_stop_does_not_hang():
     import time
 
     # 确保 QApplication 存在（QThread 需要）
-    app = QApplication.instance() or QApplication([])
+    QApplication.instance() or QApplication([])
 
     tmp = tempfile.mkdtemp()
     try:
