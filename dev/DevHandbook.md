@@ -602,6 +602,15 @@ python -m PyInstaller MediaNexus.spec --clean --noconfirm
 
 安装器输出：`dist/installer/MediaNexus-Setup.exe`
 
+#### 旧版注册表自动清理
+
+安装脚本 `[Code]` 段内置 `CleanOldMediaSyncEntries` 过程，在 `InitializeWizard` 时自动运行：
+
+1. 检测并卸载旧版 MediaSync（正确键名 + 错误键名），调用其 `unins*.exe /VERYSILENT`
+2. 若卸载程序未能删除注册表键，则强制 `RegDeleteKeyIncludingSubkeys`
+
+**历史 bug**：1.2 版安装脚本在 `[Code]` 中构造 `GetUninstallKeyName` 时多了一个 `}`，导致该版条目写入了 `{{GUID}}_is1`（双括号）而非正确的 `{{GUID}_is1}`。后续版本用正确键名检索时找不到 1.2 的条目，Windows「应用和功能」列表因此出现重复项。`BuggyKeyName` 常量专门用于定位该残留键。
+
 ### 发布注意事项
 
 - 当前是 **onedir**，不是单文件 exe

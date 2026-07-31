@@ -21,6 +21,9 @@
 #define MyAppId        "E7A2C41F-5B3D-4E8A-9C61-2F8A3B7D1E5A"
 ; 打包产物相对项目根目录（本脚本在 installer\ 下，向上退一级）
 #define SourceRoot     ".."
+; 1.2 版安装脚本在 [Code] 中拼接键名时多了一个 }，导致注册表键名错误（双 }} ）
+; 当前安装程序需检测并清理该残留条目，避免 Windows 应用列表出现重复项
+#define BuggyKeyName   "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{{" + MyAppId + "}}_is1"
 
 [Setup]
 ; 唯一 AppId（保持同一 GUID 以便将来升级覆盖安装）。如需重置可重新生成。
@@ -153,12 +156,69 @@ begin
   end;
 end;
 
+{ 清理旧版 MediaSync 注册表残留 —— 1.2 版安装脚本拼接键名时多了一个花括号， }
+{ 导致旧版条目写入了错误键名（双括号），与当前正确键名不匹配。               }
+{ 不清理会导致 Windows「应用和功能」列表出现重复条目。安装向导初始化时运行。   }
+procedure CleanOldMediaSyncEntries;
+var
+  UninstExe: String;
+  ResultCode: Integer;
+  KeyExists: Boolean;
+begin
+  { ── 阶段 1：正确键名的旧条目（1.0.x / 1.1.x） ── }
+  KeyExists := RegKeyExists(HKLM, GetUninstallKeyName) or
+               RegKeyExists(HKCU, GetUninstallKeyName);
+  if KeyExists then
+  begin
+    if RegQueryStringValue(HKLM, GetUninstallKeyName, 'UninstallString', UninstExe) or
+       RegQueryStringValue(HKCU, GetUninstallKeyName, 'UninstallString', UninstExe) then
+    begin
+      UninstExe := RemoveQuotes(UninstExe);
+      if (UninstExe <> '') and FileExists(UninstExe) then
+      begin
+        Exec(UninstExe, '/VERYSILENT /SUPPRESSMSGBOXES /NORESTART', '',
+          SW_HIDE, ewWaitUntilTerminated, ResultCode);
+      end;
+    end;
+    { 卸载程序应已自行删除注册表键；若仍存在则强制清理 }
+    if RegKeyExists(HKLM, GetUninstallKeyName) then
+      RegDeleteKeyIncludingSubkeys(HKLM, GetUninstallKeyName);
+    if RegKeyExists(HKCU, GetUninstallKeyName) then
+      RegDeleteKeyIncludingSubkeys(HKCU, GetUninstallKeyName);
+  end;
+
+  { 阶段 2：错误键名的旧条目（1.2 版双括号 bug） }
+  KeyExists := RegKeyExists(HKLM, '{#BuggyKeyName}') or
+               RegKeyExists(HKCU, '{#BuggyKeyName}');
+  if KeyExists then
+  begin
+    if RegQueryStringValue(HKLM, '{#BuggyKeyName}', 'UninstallString', UninstExe) or
+       RegQueryStringValue(HKCU, '{#BuggyKeyName}', 'UninstallString', UninstExe) then
+    begin
+      UninstExe := RemoveQuotes(UninstExe);
+      if (UninstExe <> '') and FileExists(UninstExe) then
+      begin
+        Exec(UninstExe, '/VERYSILENT /SUPPRESSMSGBOXES /NORESTART', '',
+          SW_HIDE, ewWaitUntilTerminated, ResultCode);
+      end;
+    end;
+    if RegKeyExists(HKLM, '{#BuggyKeyName}') then
+      RegDeleteKeyIncludingSubkeys(HKLM, '{#BuggyKeyName}');
+    if RegKeyExists(HKCU, '{#BuggyKeyName}') then
+      RegDeleteKeyIncludingSubkeys(HKCU, '{#BuggyKeyName}');
+  end;
+end;
+
 procedure InitializeWizard;
 begin
   IsUpdate := False;
   PrevVersion := '';
   PrevInstallDir := '';
   UpdateNoticeShown := False;
+
+  { 安装前先清理旧版 MediaSync 注册表残留（防止应用列表出现重复条目） }
+  CleanOldMediaSyncEntries;
+
   GetPreviousInstall;
 
   if IsUpdate then
