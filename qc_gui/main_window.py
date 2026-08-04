@@ -951,7 +951,7 @@ class MainWindow(QMainWindow):
         text.append(f"## 文件: {result.get('filename', '')}\n")
 
         # 黑帧
-        bf = result.get("black_frame", {})
+        bf = result.get("black_frame") or {}
         if bf.get("segments"):
             text.append("### ⬛ 黑帧检测")
             for seg in bf["segments"]:
@@ -962,7 +962,7 @@ class MainWindow(QMainWindow):
             text.append("### ⬛ 黑帧检测: ✓ 未发现\n")
 
         # 夹帧/跳帧
-        ff = result.get("flash_frame", {})
+        ff = result.get("flash_frame") or {}
         if ff.get("candidates"):
             text.append("### ⚡ 夹帧/跳帧检测")
             for cand in ff["candidates"]:
@@ -977,7 +977,7 @@ class MainWindow(QMainWindow):
             text.append("### ⚡ 夹帧/跳帧检测: ✓ 未发现\n")
 
         # 黑边
-        bb = result.get("black_border", {})
+        bb = result.get("black_border") or {}
         text.append("### 🖼 黑边检测")
         text.append(f"- 扫描帧数: {bb.get('frames_checked', 0)} (总帧数: {bb.get('total_frames', '?')})")
         text.append(f"- 分辨率: {bb.get('resolution', '?')}")
@@ -1000,7 +1000,7 @@ class MainWindow(QMainWindow):
                        f"左{mb.get('left',0)}px 右{mb.get('right',0)}px")
 
         # 静音
-        sd = result.get("silence", {})
+        sd = result.get("silence") or {}
         if sd.get("no_audio"):
             text.append("\n### 🔇 静音检测: 无音频流，跳过")
         elif sd.get("segments"):
@@ -1013,7 +1013,7 @@ class MainWindow(QMainWindow):
             text.append("\n### 🔇 静音检测: ✓ 未发现异常静音")
 
         # 一致性
-        cons = result.get("consistency", {})
+        cons = result.get("consistency") or {}
         if cons and cons.get("inconsistencies"):
             text.append("\n### 📐 一致性检查")
             for inc in cons["inconsistencies"]:

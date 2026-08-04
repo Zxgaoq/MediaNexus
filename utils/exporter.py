@@ -202,7 +202,7 @@ class ExcelExporter:
             filename = result.get("filename", "")
 
             # 黑帧
-            bf = result.get("black_frame", {})
+            bf = result.get("black_frame") or {}
             if bf:
                 segs = bf.get("segments", [])
                 detail = "; ".join([f"{s.get('start_time', 0)}s-{s.get('end_time', 0)}s ({s.get('severity', '')})" for s in segs[:5]]) if segs else "无"
@@ -214,7 +214,7 @@ class ExcelExporter:
                 row += 1
 
             # 夹帧/跳帧
-            ff = result.get("flash_frame", {})
+            ff = result.get("flash_frame") or {}
             if ff:
                 cands = ff.get("candidates", [])
                 detail = "; ".join([
@@ -230,7 +230,7 @@ class ExcelExporter:
                 row += 1
 
             # 黑边
-            bb = result.get("black_border", {})
+            bb = result.get("black_border") or {}
             if bb:
                 ws.cell(row=row, column=1, value=filename)
                 ws.cell(row=row, column=2, value="黑边检测")
@@ -240,7 +240,7 @@ class ExcelExporter:
                 row += 1
 
             # 静音
-            sd = result.get("silence", {})
+            sd = result.get("silence") or {}
             if sd:
                 segs = sd.get("segments", [])
                 detail = "; ".join([f"{s.get('start', 0)}s-{s.get('end', 0)}s ({s.get('severity', '')})" for s in segs[:5]]) if segs else "无"
@@ -278,7 +278,7 @@ class ExcelExporter:
             filename = result.get("filename", "")
 
             # 黑帧时间点
-            bf = result.get("black_frame", {})
+            bf = result.get("black_frame") or {}
             for seg in bf.get("segments", []):
                 ws.cell(row=row, column=1, value=filename)
                 ws.cell(row=row, column=2, value="黑帧")
@@ -289,7 +289,7 @@ class ExcelExporter:
                 row += 1
 
             # 夹帧/跳帧时间点
-            ff = result.get("flash_frame", {})
+            ff = result.get("flash_frame") or {}
             for cand in ff.get("candidates", []):
                 ws.cell(row=row, column=1, value=filename)
                 ws.cell(row=row, column=2, value=f"{cand.get('type', '夹帧')}(帧{cand.get('start_frame', '')}~{cand.get('end_frame', '')})")
@@ -300,7 +300,7 @@ class ExcelExporter:
                 row += 1
 
             # 静音时间点
-            sd = result.get("silence", {})
+            sd = result.get("silence") or {}
             for seg in sd.get("segments", []):
                 ws.cell(row=row, column=1, value=filename)
                 ws.cell(row=row, column=2, value="静音")

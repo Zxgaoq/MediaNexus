@@ -1,7 +1,7 @@
 # MediaNexus 开发手册
 
 > 版本：v1.0.0  
-> 更新时间：2026-07-28  
+> 更新时间：2026-08-04  
 > 适用对象：后续维护者 / 功能开发者 / 问题排查者
 
 ---
@@ -714,6 +714,7 @@ python -m pytest tests/test_detectors.py -v
 21. **`FileListView.set_entries()` 会清空 Qt 选中状态**——`beginResetModel()` 是 Qt 框架行为，SelectionModel 会立即清除所有选中索引。Watcher 变更、心跳定时器、手动刷新、Worker 完成均会触发 `set_entries()`。修复方式：在 `FileListView.set_entries()` 中先调用 `selected_paths()` 保存当前选中路径，模型重置后根据路径在新 `_row_of` 中定位行号并通过 `selectionModel().select()` 恢复
 22. **`qc_gui/main_window.py` 必须导入 `QTableWidgetItem`**——多版本对比的一致性 Tab 使用该组件构建参数对比表格，漏导会导致点击结果查看一致性时 `NameError` 崩溃
 23. **`WorkerManager.stop_all()` 中 `isRunning()` 需 RuntimeError 防护**——Worker 的 C++ 对象被 `deleteLater` 销毁后，Python 引用仍存活，调用 `isRunning()` 触发 `RuntimeError: libshiboken: Internal C++ object already deleted`。修复：`stop_all` 中用 `try/except RuntimeError` 包裹 `isRunning()` 调用，异常时视为 `alive=False`
+24. **QC 结果 dict 中 `flash_frame` 等字段可能为 `None`，不能用 `dict.get(key, {})` 取值**——`dict.get(key, default)` 的 `default` 仅在 key **不存在**时生效；当 key 存在但值为 `None` 时返回 `None`。`DetectionEngine.analyze_file()` 在初始化 result 时预置了 `"flash_frame": None` / `"black_frame": None` / `"black_border": None` / `"silence": None`，但注册表中没有 `flash_frame` 检测器（始终为 `None`），且检测被取消或检测器异常时其他字段也停留在 `None`。UI 和导出器中 `result.get("flash_frame", {})` 拿到 `None` 后 `.get("candidates")` 直接 `AttributeError: 'NoneType' object has no attribute 'get'`。**修复**：全部改为 `result.get("xxx") or {}` 模式（`or {}` 无论 key 缺失还是值为 `None` 都回落为 `{}`）。涉及 `qc_gui/main_window.py`（`_show_anomalies` 5 处）、`utils/exporter.py`（`_create_detail_sheet` 4 处 + `_create_anomaly_sheet` 3 处）、`core/engine.py`（`_determine_overall` 3 处）。**规则**：对 QC result dict 中任何可能为 `None` 的字段取值时，必须用 `result.get("xxx") or {}` 而非 `result.get("xxx", {})`
 
 ---
 

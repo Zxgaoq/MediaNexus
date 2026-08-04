@@ -221,7 +221,7 @@ class DetectionEngine:
         has_warning = False
 
         # 黑帧检查
-        bf = result.get("black_frame", {})
+        bf = result.get("black_frame") or {}
         if bf:
             for seg in bf.get("segments", []):
                 if seg.get("severity") == "错误":
@@ -230,12 +230,12 @@ class DetectionEngine:
                     has_warning = True
 
         # 黑边检查
-        bb = result.get("black_border", {})
+        bb = result.get("black_border") or {}
         if bb and bb.get("has_black_border"):
             has_warning = True
 
         # 静音检查
-        sd = result.get("silence", {})
+        sd = result.get("silence") or {}
         if sd:
             for seg in sd.get("segments", []):
                 if seg.get("severity") == "错误":
