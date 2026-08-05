@@ -29,7 +29,7 @@ def _spin_arrow_dir() -> str:
     """返回存放上下箭头 SVG 的临时目录。"""
     global _SPIN_ARROW_DIR
     if _SPIN_ARROW_DIR is None:
-        _SPIN_ARROW_DIR = os.path.join(tempfile.gettempdir(), "VideoQC-Pro", "spin-arrows")
+        _SPIN_ARROW_DIR = os.path.join(tempfile.gettempdir(), "MediaNexus-QC", "spin-arrows")
     os.makedirs(_SPIN_ARROW_DIR, exist_ok=True)
     return _SPIN_ARROW_DIR
 
@@ -60,7 +60,7 @@ def _panel_icon_dir() -> str:
     """返回存放面板折叠/展开图标 SVG 的临时目录。"""
     global _PANEL_ICON_DIR
     if _PANEL_ICON_DIR is None:
-        _PANEL_ICON_DIR = os.path.join(tempfile.gettempdir(), "VideoQC-Pro", "panel-icons")
+        _PANEL_ICON_DIR = os.path.join(tempfile.gettempdir(), "MediaNexus-QC", "panel-icons")
     os.makedirs(_PANEL_ICON_DIR, exist_ok=True)
     return _PANEL_ICON_DIR
 
@@ -127,7 +127,7 @@ def _checkbox_dir() -> str:
     """返回存放复选框勾选图标 SVG 的临时目录。"""
     global _CHECKBOX_DIR
     if _CHECKBOX_DIR is None:
-        _CHECKBOX_DIR = os.path.join(tempfile.gettempdir(), "VideoQC-Pro", "checkbox-icons")
+        _CHECKBOX_DIR = os.path.join(tempfile.gettempdir(), "MediaNexus-QC", "checkbox-icons")
     os.makedirs(_CHECKBOX_DIR, exist_ok=True)
     return _CHECKBOX_DIR
 
@@ -436,6 +436,29 @@ QScrollBar::handle:horizontal {{
 QScrollBar::handle:horizontal:hover {{
     background: {c["text_tertiary"]};
 }}
+QScrollBar::sub-line:vertical, QScrollBar::add-line:vertical {{
+    height: 0px;
+    border: none;
+    background: transparent;
+}}
+QScrollBar::sub-line:horizontal, QScrollBar::add-line:horizontal {{
+    width: 0px;
+    border: none;
+    background: transparent;
+}}
+QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical,
+QScrollBar::left-arrow:horizontal, QScrollBar::right-arrow:horizontal {{
+    width: 0px;
+    height: 0px;
+    border: none;
+    image: none;
+}}
+QScrollBar::sub-page, QScrollBar::add-page {{
+    background: transparent;
+}}
+QAbstractScrollArea::corner {{
+    background: transparent;
+}}
 
 /* 进度条 */
 QProgressBar {{
@@ -613,12 +636,12 @@ QTableWidget {{
 QMenu {{
     background-color: {c["bg_primary"]};
     border: 1px solid {c["border"]};
-    border-radius: 8px;
-    padding: 4px;
+    border-radius: 0px;
+    padding: 0px;
 }}
 QMenu::item {{
     padding: 8px 24px;
-    border-radius: 4px;
+    border-radius: 0px;
     color: {c["text_primary"]};
 }}
 QMenu::item:selected {{

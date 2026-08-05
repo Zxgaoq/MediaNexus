@@ -25,7 +25,7 @@ import zipfile
 import tempfile
 import urllib.request
 
-logger = logging.getLogger("VideoQC.FFmpegManager")
+logger = logging.getLogger("MediaNexus.QC.FFmpegManager")
 
 # 默认下载地址（兜底用；内置完整版已覆盖全部场景）。
 # 使用 gyan.dev 的 GitHub 镜像（CDN 稳定），release 完整版静态构建。

@@ -80,7 +80,7 @@ def open_qc_detection(file_paths: list[str] | None = None,
     win.setWindowTitle("影枢 QC")
 
     # QC 配置已统一由主程序配置单例（%APPDATA% 下的 qc_presets /
-    # qc_active_preset / qc_settings）管理，VideoQC 启动时会直接读取，
+    # qc_active_preset / qc_settings）管理，QC 启动时会直接读取，
     # 无需在此重复注入。
 
     if file_paths:

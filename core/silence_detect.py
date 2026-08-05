@@ -10,7 +10,7 @@ import numpy as np
 import logging
 from utils.ffmpeg_manager import FFmpegManager
 
-logger = logging.getLogger("VideoQC.SilenceDetect")
+logger = logging.getLogger("MediaNexus.QC.SilenceDetect")
 
 # 尝试导入 librosa，如果不可用则使用 FFmpeg 替代方案
 try:

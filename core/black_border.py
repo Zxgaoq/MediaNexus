@@ -10,7 +10,7 @@ import numpy as np
 import logging
 from collections import Counter
 
-logger = logging.getLogger("VideoQC.BlackBorder")
+logger = logging.getLogger("MediaNexus.QC.BlackBorder")
 
 
 class BlackBorderDetector:

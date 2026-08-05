@@ -28,7 +28,7 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 
-logger = logging.getLogger("VideoQC.MultiVersionCompareDialog")
+logger = logging.getLogger("MediaNexus.QC.MultiVersionCompareDialog")
 
 
 # ── 列定义：每个检测项 ──

@@ -16,7 +16,7 @@ import logging
 from dataclasses import dataclass, field
 from typing import Any
 
-logger = logging.getLogger("VideoQC.Detector")
+logger = logging.getLogger("MediaNexus.QC.Detector")
 
 
 @dataclass

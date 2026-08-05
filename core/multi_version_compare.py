@@ -17,7 +17,7 @@ from typing import List, Dict, Optional
 
 from core.video_probe import VideoProbe
 
-logger = logging.getLogger("VideoQC.MultiVersionCompare")
+logger = logging.getLogger("MediaNexus.QC.MultiVersionCompare")
 
 VIDEO_EXTENSIONS = {
     ".mp4", ".mov", ".avi", ".mkv", ".webm", ".flv",

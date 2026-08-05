@@ -13,7 +13,7 @@
   <img src="https://img.shields.io/badge/Python-3.10%2B-blue" alt="Python" />
   <img src="https://img.shields.io/badge/%E5%B9%B3%E5%8F%B0-Windows%2010%2F11-lightgrey" alt="平台" />
   <img src="https://img.shields.io/badge/%E6%A1%86%E6%9E%B6-PySide6-green" alt="框架" />
-  <img src="https://img.shields.io/badge/%E7%89%88%E6%9C%AC-1.0.0-orange" alt="版本" />
+  <img src="https://img.shields.io/badge/%E7%89%88%E6%9C%AC-1.1.0-orange" alt="版本" />
   <img src="https://img.shields.io/github/last-commit/Zxgaoq/MediaNexus" alt="最近提交" />
 </p>
 
@@ -41,14 +41,14 @@ python run.py
 
 ## 功能
 
-### ProjectSync — 素材同步
+### 素材同步
 
 - **三栏浏览**：项目导航 / 本地目录 / NAS 目录，一目了然
 - **项目关联**：本地项目与 NAS 素材目录建立映射，支持归一化模糊匹配
 - **SQLite 索引**：NAS 目录扫描结果本地缓存，避免重复遍历网络路径
 - **文件操作**：复制、移动、重命名、新建、删除、拖拽
 
-### VideoQC — 视频质检
+### 视频质检
 
 | 检测项 | 说明 |
 |:---|:---|

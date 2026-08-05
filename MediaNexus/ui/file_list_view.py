@@ -535,7 +535,6 @@ class FileListView(QWidget):
         self._droppable = droppable
         self._on_open = on_open
         self.files_dropped = None
-        self.send_to_peer = None
         self.get_current_dir = None
         self._view_mode = VIEW_LIST
         self._thumb_loader: ThumbnailLoader | None = None
@@ -854,11 +853,6 @@ class FileListView(QWidget):
             new_folder_act = menu.addAction("新建文件夹")
             new_file_act = menu.addAction("新建文件")
 
-        send_act = None
-        if effective and self.send_to_peer is not None:
-            menu.addSeparator()
-            send_act = menu.addAction("发送到对侧")
-
         # ── QC 检测 ──
         VIDEO_EXTS = {
             ".mp4", ".mov", ".avi", ".mkv", ".webm", ".flv",
@@ -911,8 +905,6 @@ class FileListView(QWidget):
             self._new_folder()
         elif action == new_file_act:
             self._new_file()
-        elif action == send_act and effective:
-            self.send_to_peer(effective)
         elif action == refresh_act:
             if self.window() and hasattr(self.window(), "refresh_current"):
                 self.window().refresh_current()

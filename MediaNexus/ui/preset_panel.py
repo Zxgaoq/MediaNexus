@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
 """
 检测预设参数编辑面板
-从 VideoQC 的 preset_manager.py 移植，去除对 VideoQC ConfigManager 的依赖，
+独立的 QC 预设参数面板，不直接依赖 QC ConfigManager，
 改为读写 MediaNexus config_manager 的 qc_presets / qc_active_preset。
 """
 from __future__ import annotations
 
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QDoubleSpinBox,
     QFormLayout,
+    QFrame,
     QGroupBox,
     QLabel,
     QScrollArea,
@@ -53,7 +55,7 @@ _PARAM_GROUPS = [
 
 
 class PresetParamPanel(QWidget):
-    """检测预设参数编辑面板（完整移植自 VideoQC，去除 ConfigManager 依赖）。"""
+    """检测预设参数编辑面板。"""
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -62,9 +64,14 @@ class PresetParamPanel(QWidget):
 
     def _init_ui(self):
         scroll = QScrollArea()
+        scroll.setObjectName("settingsInnerScroll")
         scroll.setWidgetResizable(True)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        scroll.setLineWidth(0)
 
         container = QWidget()
+        container.setObjectName("settingsInnerContent")
         main_layout = QVBoxLayout(container)
 
         for group_title, params in _PARAM_GROUPS:

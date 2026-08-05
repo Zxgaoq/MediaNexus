@@ -9,7 +9,7 @@ import platform
 import logging
 from utils.ffmpeg_manager import FFmpegManager
 
-logger = logging.getLogger("VideoQC.VideoProbe")
+logger = logging.getLogger("MediaNexus.QC.VideoProbe")
 
 
 class VideoProbe:

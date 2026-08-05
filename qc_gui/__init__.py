@@ -1,5 +1,5 @@
 """
-gui/widgets — VideoQC Pro 的 UI 小组件包
+gui/widgets — 影枢 QC 的 UI 小组件包
 
 将原本集中在 main_window.py 的界面构建拆分为独立的 Widget 类，
 每个 Widget 只负责自身 UI 构建并暴露内部控件，交互逻辑（信号处理）

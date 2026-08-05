@@ -8,7 +8,7 @@
 import numpy as np
 import logging
 
-logger = logging.getLogger("VideoQC.BlackFrame")
+logger = logging.getLogger("MediaNexus.QC.BlackFrame")
 
 
 class BlackFrameDetector:

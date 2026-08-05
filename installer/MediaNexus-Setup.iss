@@ -15,7 +15,7 @@
 ; ============================================================================
 
 #define MyAppName      "MediaNexus"
-#define MyAppVersion   "1.0.0"
+#define MyAppVersion   "1.1.0"
 #define MyAppPublisher "Zxgaoq"
 #define MyAppExeName   "MediaNexus.exe"
 #define MyAppId        "E7A2C41F-5B3D-4E8A-9C61-2F8A3B7D1E5A"

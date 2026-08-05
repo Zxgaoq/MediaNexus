@@ -11,7 +11,7 @@ from openpyxl.styles import (
 )
 from openpyxl.utils import get_column_letter
 
-logger = logging.getLogger("VideoQC.Exporter")
+logger = logging.getLogger("MediaNexus.QC.Exporter")
 
 
 class ExcelExporter:
@@ -79,9 +79,9 @@ class ExcelExporter:
         error_fill = PatternFill(start_color="FCE8E6", end_color="FCE8E6", fill_type="solid")
 
         # 标题行
-        ws.merge_cells("A1:O1")
+        ws.merge_cells("A1:P1")
         title_cell = ws["A1"]
-        title_cell.value = f"VideoQC Pro 视频质检报告 - {datetime.now().strftime('%Y-%m-%d %H:%M')}"
+        title_cell.value = f"影枢 QC 视频质检报告 - {datetime.now().strftime('%Y-%m-%d %H:%M')}"
         title_cell.font = Font(name="微软雅黑", size=16, bold=True, color="1A73E8")
         title_cell.alignment = Alignment(horizontal="center", vertical="center")
         ws.row_dimensions[1].height = 40
@@ -91,7 +91,7 @@ class ExcelExporter:
             "序号", "文件名", "文件大小(MB)", "时长(s)",
             "视频编码", "分辨率", "帧率", "视频码率(kbps)",
             "音频编码", "采样率(Hz)", "声道", "音频码率(kbps)",
-            "黑帧", "夹帧/跳帧", "黑边", "静音", "综合判定"
+            "黑帧", "黑边", "静音", "综合判定"
         ]
 
         for col, header in enumerate(headers, 1):
@@ -113,7 +113,6 @@ class ExcelExporter:
 
             # 检测结果汇总
             bf_ok = not (result.get("black_frame") or {}).get("has_black_frames", False)
-            ff_ok = not (result.get("flash_frame") or {}).get("has_flash_frames", False)
             bb_ok = not (result.get("black_border") or {}).get("has_black_border", False)
             sd_ok = not (result.get("silence") or {}).get("has_silence", False)
 
@@ -134,7 +133,6 @@ class ExcelExporter:
                 audio.get("channels", ""),
                 round(audio.get("bitrate", 0) / 1000, 1) if audio.get("bitrate") else "",
                 status_text(bf_ok),
-                status_text(ff_ok),
                 status_text(bb_ok),
                 status_text(sd_ok),
                 self._get_status_label(result.get("overall_status", "pending")),
@@ -150,7 +148,7 @@ class ExcelExporter:
                     cell.fill = alt_fill
 
             # 综合判定着色
-            overall_cell = ws.cell(row=row, column=17)
+            overall_cell = ws.cell(row=row, column=16)
             status = result.get("overall_status", "pending")
             if status == "pass":
                 overall_cell.fill = pass_fill
@@ -163,7 +161,7 @@ class ExcelExporter:
                 overall_cell.font = Font(name="微软雅黑", color="C5221F", bold=True)
 
         # 列宽调整
-        col_widths = [6, 30, 10, 8, 12, 14, 8, 12, 12, 10, 6, 12, 10, 10, 10, 10, 12]
+        col_widths = [6, 30, 10, 8, 12, 14, 8, 12, 12, 10, 6, 12, 10, 10, 10, 12]
         for col, width in enumerate(col_widths, 1):
             ws.column_dimensions[get_column_letter(col)].width = width
 
@@ -211,22 +209,6 @@ class ExcelExporter:
                 ws.cell(row=row, column=3, value="异常" if segs else "通过")
                 ws.cell(row=row, column=4, value=detail)
                 ws.cell(row=row, column=5, value="错误" if any(s.get("severity") == "错误" for s in segs) else ("警告" if segs else "通过"))
-                row += 1
-
-            # 夹帧/跳帧
-            ff = result.get("flash_frame") or {}
-            if ff:
-                cands = ff.get("candidates", [])
-                detail = "; ".join([
-                    f"{c.get('type', '夹帧')}帧{c.get('start_frame', 0)}~{c.get('end_frame', 0)}"
-                    f"({c.get('span_frames', 1)}帧/{c.get('duration_ms', 0):.0f}ms)"
-                    for c in cands[:5]
-                ]) if cands else "无"
-                ws.cell(row=row, column=1, value=filename)
-                ws.cell(row=row, column=2, value="夹帧/跳帧检测")
-                ws.cell(row=row, column=3, value="异常" if cands else "通过")
-                ws.cell(row=row, column=4, value=detail)
-                ws.cell(row=row, column=5, value="高危 人工复核" if cands else "通过")
                 row += 1
 
             # 黑边
@@ -286,17 +268,6 @@ class ExcelExporter:
                 ws.cell(row=row, column=4, value=seg.get("end_time", ""))
                 ws.cell(row=row, column=5, value=seg.get("duration", ""))
                 ws.cell(row=row, column=6, value=seg.get("severity", ""))
-                row += 1
-
-            # 夹帧/跳帧时间点
-            ff = result.get("flash_frame") or {}
-            for cand in ff.get("candidates", []):
-                ws.cell(row=row, column=1, value=filename)
-                ws.cell(row=row, column=2, value=f"{cand.get('type', '夹帧')}(帧{cand.get('start_frame', '')}~{cand.get('end_frame', '')})")
-                ws.cell(row=row, column=3, value=cand.get("start_time", ""))
-                ws.cell(row=row, column=4, value=cand.get("end_time", ""))
-                ws.cell(row=row, column=5, value=cand.get("span_frames", 1))
-                ws.cell(row=row, column=6, value=f"{cand.get('confidence_level', '')} {cand.get('confidence', '?')}%")
                 row += 1
 
             # 静音时间点

@@ -9,13 +9,13 @@ import json
 import logging
 from copy import deepcopy
 
-logger = logging.getLogger("VideoQC.Config")
+logger = logging.getLogger("MediaNexus.QC.Config")
 
 
 # ---------------------------------------------------------------------------
 # 主程序（MediaNexus / MediaNexus）配置单例的懒加载
 # ---------------------------------------------------------------------------
-# 当本模块在 MediaNexus 主程序进程内被拉起时，VideoQC 的配置应直接复用主程序的
+# 当本模块在 MediaNexus 主程序进程内被拉起时，QC 的配置应直接复用主程序的
 # %APPDATA% 配置文件（qc_presets / qc_active_preset / qc_settings），由主程序统一
 # 落盘，从而彻底消除「根目录 config.json」与「%APPDATA% 配置」双源漂移。
 # 独立运行 QC（未加载主程序）时回退到本地 config.json。
@@ -67,7 +67,7 @@ DEFAULT_THRESHOLDS = {
 DEFAULT_PRESETS = {
     "default": {
         "name": "默认预设",
-        "description": "VideoQC Pro 默认检测参数，适用于大多数视频质检场景",
+        "description": "影枢 QC 默认检测参数，适用于大多数视频质检场景",
         "thresholds": {
             "black_frame": {"mean_pixel_threshold": 3, "min_duration": 1},
             "black_border": {"cliff_gradient_min": 25, "border_mean_max": 6, "border_std_max": 6, "contrast_ratio_min": 4.0, "min_border_px": 3, "mode_ratio_min": 0.90},

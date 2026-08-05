@@ -168,6 +168,7 @@ class MainWindow(QMainWindow):
 
     def _build_statusbar(self):
         sb = self.statusBar()
+        sb.setSizeGripEnabled(False)
         self._progress = QProgressBar()
         self._progress.setRange(0, 0)
         self._progress.setVisible(False)
@@ -187,10 +188,6 @@ class MainWindow(QMainWindow):
 
         self.right.matched_changed.connect(self._on_matched_changed)
         self.right.need_rematch.connect(self._on_need_rematch)
-
-        # 双向发送到对侧（右键菜单「发送到对侧」= 复制到对侧当前目录）
-        self.middle.view.send_to_peer = lambda paths: self.right._on_files_dropped(paths, None, False)
-        self.right.view.send_to_peer = lambda paths: self.middle._on_files_dropped(paths, None, False)
 
         # 快捷键
         self.addAction(self._shortcut("Ctrl+F", self._focus_search))
@@ -684,7 +681,7 @@ class MainWindow(QMainWindow):
             "· 心跳自动刷新当前项目内容（可配置间隔）<br>"
             "· 增量刷新不阻塞操作</p>"
             "<p><b>QC 视频检测</b><br>"
-            "· 一键检测黑帧、夹帧/跳帧、黑边、静音<br>"
+            "· 一键检测黑帧、黑边、静音<br>"
             "· 右键文件或文件夹直接发起检测<br>"
             "· 多版本对比：同名视频跨文件夹横向对比<br>"
             "· 检测预设可在设置中管理，参数可视化编辑</p>"

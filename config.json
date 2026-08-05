@@ -2,7 +2,7 @@
   "qc_presets": {
     "default": {
       "name": "默认预设",
-      "description": "VideoQC Pro 默认检测参数，适用于大多数视频质检场景",
+      "description": "影枢 QC 默认检测参数，适用于大多数视频质检场景",
       "thresholds": {
         "black_frame": {
           "mean_pixel_threshold": 3,

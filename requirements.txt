@@ -13,11 +13,11 @@ aiofiles>=23.2.0
 # 剪贴板增强（Windows 可选；缺失时自动回退到 PowerShell）
 pywin32>=306 ; sys_platform == "win32"
 
-# ===== VideoQC Pro（视频质检子系统）运行依赖 =====
+# ===== 影枢 QC（视频质检子系统）运行依赖 =====
 # OpenCV：仅用于帧分析（imread / VideoCapture），无需 GUI 后端；
 # 用 headless 变体可避免自带 Qt/GTK 与 PySide6 冲突。
 opencv-python-headless>=4.8.0
-# 数值计算：黑场 / 闪帧 / 黑边 / 静音检测均依赖 numpy
+# 数值计算：黑帧 / 黑边 / 静音检测均依赖 numpy
 numpy>=1.24.0
 # Excel 报告导出：质检结果明细与多版本对比
 openpyxl>=3.1.0

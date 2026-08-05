@@ -49,7 +49,7 @@ def _main():
             f"原始错误：{exc}",
         )
         return 1
-    # 确保相对路径资源（assets/arrows/ 等）始终可解析
+    # 确保开发态相对资源路径始终可解析
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
     return main() or 0
 

@@ -4,7 +4,7 @@
 """
 import logging
 
-logger = logging.getLogger("VideoQC.Consistency")
+logger = logging.getLogger("MediaNexus.QC.Consistency")
 
 
 class ConsistencyChecker:

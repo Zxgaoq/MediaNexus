@@ -1,5 +1,5 @@
 """
-VideoQC Pro 主窗口
+影枢 QC 主窗口
 提供完整的视频质检 GUI 界面。
 
 界面构建已拆分为 gui/widgets/ 下的独立 Widget 类（FilePanel / ResultPanel /
@@ -713,7 +713,6 @@ class MainWindow(QMainWindow):
 
             # 检测项目状态
             bf = result.get("black_frame") or {}
-            ff = result.get("flash_frame") or {}
             bb = result.get("black_border") or {}
             sd = result.get("silence") or {}
             cons = result.get("consistency") or {}
@@ -723,7 +722,6 @@ class MainWindow(QMainWindow):
 
             # 直接传异常状态（有异常=✗，无异常=✓）
             bf_has = bf.get("has_black_frames", False)
-            ff_has = ff.get("has_flash_frames", False)
             bb_has = bb.get("has_black_border", False)
             sd_has = sd.get("has_silence", False)
 
@@ -743,7 +741,6 @@ class MainWindow(QMainWindow):
                 get_status_style(status)["icon"],
                 cons_text,
                 check_mark(bf_has),
-                check_mark(ff_has),
                 check_mark(bb_has),
                 check_mark(sd_has),
             ])
@@ -752,7 +749,7 @@ class MainWindow(QMainWindow):
 
             # 根据状态着色
             get_status_style(status)
-            for col in range(7):
+            for col in range(6):
                 item.setBackground(col, Qt.GlobalColor.transparent)
 
             # 一致性不通过的整行高亮
@@ -769,7 +766,7 @@ class MainWindow(QMainWindow):
                 info_item = QTreeWidgetItem([
                     "📋 元数据",
                     f"{vid.get('codec', '?')} • {vid.get('resolution', '?')} • {vid.get('fps', '?')}fps",
-                    "", "", "", "", ""
+                    "", "", "", ""
                 ])
                 item.addChild(info_item)
 
@@ -777,7 +774,7 @@ class MainWindow(QMainWindow):
                 audio_item = QTreeWidgetItem([
                     "🎵 音频",
                     f"{aud.get('codec', '?')} • {aud.get('sample_rate_str', aud.get('sample_rate', '?'))} • {ch_str}",
-                    "", "", "", "", ""
+                    "", "", "", ""
                 ])
                 item.addChild(audio_item)
 
@@ -790,26 +787,7 @@ class MainWindow(QMainWindow):
                         "⬛ 黑帧",
                         f"{seg.get('start_time', 0):.1f}s ~ {seg.get('end_time', 0):.1f}s ({fc}帧)",
                         seg.get("severity", ""),
-                        "", "", "", ""
-                    ])
-                    item.addChild(anomaly_item)
-
-            ff_cands = ff.get("candidates", [])
-            if ff_cands:
-                for cand in ff_cands[:3]:
-                    cand_type = cand.get("type", "夹帧")
-                    span = cand.get("span_frames", 1)
-                    dur = cand.get("duration_ms", 0)
-                    conf = cand.get("confidence", "?")
-                    level = cand.get("confidence_level", "")
-                    anomaly_item = QTreeWidgetItem([
-                        f"⚡ {cand_type}",
-                        f"帧 {cand.get('start_frame', '?')}~{cand.get('end_frame', '?')} ({span}帧/{dur:.0f}ms)",
-                        f"{level} {conf}%",
-                        f"恢复={cand.get('recovery_score', '?')}",
-                        f"异常分={cand.get('anomaly_score', '?')}",
-                        "",
-                        ""
+                        "", "", ""
                     ])
                     item.addChild(anomaly_item)
 
@@ -820,7 +798,7 @@ class MainWindow(QMainWindow):
                         "🔇 静音",
                         f"{seg.get('start', 0):.1f}s - {seg.get('end', 0):.1f}s",
                         seg.get("severity", ""),
-                        "", "", "", ""
+                        "", "", ""
                     ])
                     item.addChild(anomaly_item)
 
@@ -833,7 +811,7 @@ class MainWindow(QMainWindow):
                         "🖼 黑边",
                         f"{seg.get('start_time', 0):.1f}s - {seg.get('end_time', 0):.1f}s ({seg.get('duration', 0):.1f}s) {border_desc}",
                         seg.get("severity", ""),
-                        "", "", "", ""
+                        "", "", ""
                     ])
                     item.addChild(anomaly_item)
 
@@ -843,7 +821,7 @@ class MainWindow(QMainWindow):
                     "📐 不一致",
                     f"{inc['param']}: {inc['expected']} → {inc['actual']}",
                     inc.get("severity", ""),
-                    "", "", "", ""
+                    "", "", ""
                 ])
                 item.addChild(inc_item)
 
@@ -961,21 +939,6 @@ class MainWindow(QMainWindow):
         else:
             text.append("### ⬛ 黑帧检测: ✓ 未发现\n")
 
-        # 夹帧/跳帧
-        ff = result.get("flash_frame") or {}
-        if ff.get("candidates"):
-            text.append("### ⚡ 夹帧/跳帧检测")
-            for cand in ff["candidates"]:
-                cand_type = cand.get("type", "夹帧")
-                span = cand.get("span_frames", 1)
-                time_str = cand.get("time_str", "")
-                line = (f"- 帧 {cand.get('start_frame', '?')}~{cand.get('end_frame', '?')} "
-                        f"({span}帧) {time_str} "
-                        f"[{cand_type}]")
-                text.append(line)
-        else:
-            text.append("### ⚡ 夹帧/跳帧检测: ✓ 未发现\n")
-
         # 黑边
         bb = result.get("black_border") or {}
         text.append("### 🖼 黑边检测")
@@ -1078,7 +1041,7 @@ class MainWindow(QMainWindow):
 
         # 使用规范的导出目录作为默认位置
         default_dir = self.config.get("last_output_dir") or self.storage.exports_dir
-        default_name = f"VideoQC_Report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+        default_name = f"MediaNexus_QC_Report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
         default_path = os.path.join(default_dir, default_name)
 
         path, _ = QFileDialog.getSaveFileName(
@@ -1126,7 +1089,7 @@ class MainWindow(QMainWindow):
             self, "关于 影枢 QC",
             "<h2>影枢 QC</h2>"
             "<p>视频批量质量检测工具（MediaNexus 一体化套件之质检子系统）</p>"
-            "<p>功能: 视频元数据提取、黑帧/夹帧/跳帧/黑边/静音检测、一致性校验、多版本对比</p>"
+            "<p>功能: 视频元数据提取、黑帧/黑边/静音检测、一致性校验、多版本对比</p>"
             "<p>技术栈: Python + PySide6 + FFmpeg + OpenCV</p>"
         )
 

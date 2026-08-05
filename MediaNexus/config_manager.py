@@ -97,10 +97,10 @@ class ConfigManager:
                 "ffmpeg_manual_dir": "",        # 用户手动指定的 FFmpeg 目录
                 "ffmpeg_download_url": "",      # 自定义下载地址；为空则用内置默认
             },
-            "qc_presets": {          # 检测预设（QC 子系统唯一来源，VideoQC 直接读写此处）
+            "qc_presets": {          # 检测预设（QC 子系统唯一来源）
                 "default": {
                     "name": "默认预设",
-                    "description": "VideoQC Pro 默认检测参数",
+                    "description": "影枢 QC 默认检测参数",
                     "thresholds": {
                         "black_frame": {"mean_pixel_threshold": 3, "min_duration": 1},
                         "black_border": {"cliff_gradient_min": 25, "border_mean_max": 6, "border_std_max": 6, "contrast_ratio_min": 4.0, "min_border_px": 3, "mode_ratio_min": 0.90},

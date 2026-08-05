@@ -16,6 +16,7 @@ from PySide6.QtWidgets import (
     QCheckBox,
     QDialog,
     QFileDialog,
+    QFrame,
     QGroupBox,
     QHBoxLayout,
     QInputDialog,
@@ -41,13 +42,110 @@ from utils.ffmpeg_manager import FFmpegManager, DEFAULT_DOWNLOAD_URL
 from utils.storage_manager import StorageManager
 
 
+_SETTINGS_QSS = """
+QDialog#settingsDialog {
+    background-color: #FFFFFF;
+}
+
+QDialog#settingsDialog QTabWidget {
+    background-color: #FFFFFF;
+    border: none;
+}
+QDialog#settingsDialog QTabWidget::pane {
+    background-color: #FFFFFF;
+    border: 1px solid #D9E0DF;
+    top: -1px;
+}
+QDialog#settingsDialog QTabBar::tab {
+    background-color: #F3F4F6;
+    color: #374151;
+    border: 1px solid #D9E0DF;
+    padding: 5px 12px;
+    margin-right: 2px;
+}
+QDialog#settingsDialog QTabBar::tab:hover {
+    background-color: #F9FAFB;
+}
+QDialog#settingsDialog QTabBar::tab:selected {
+    background-color: #FFFFFF;
+    color: #1D4ED8;
+    border-bottom-color: #FFFFFF;
+}
+
+QDialog#settingsDialog QScrollArea#settingsPageScroll,
+QDialog#settingsDialog QScrollArea#settingsInnerScroll {
+    background-color: #FFFFFF;
+    border: none;
+}
+QDialog#settingsDialog QScrollArea#cacheListScroll {
+    background-color: #FFFFFF;
+    border: 1px solid #E5E7EB;
+    border-radius: 6px;
+}
+QDialog#settingsDialog QScrollBar::sub-line:vertical,
+QDialog#settingsDialog QScrollBar::add-line:vertical {
+    height: 0px;
+    border: none;
+    background: transparent;
+}
+QDialog#settingsDialog QScrollBar::sub-line:horizontal,
+QDialog#settingsDialog QScrollBar::add-line:horizontal {
+    width: 0px;
+    border: none;
+    background: transparent;
+}
+QDialog#settingsDialog QScrollBar::up-arrow:vertical,
+QDialog#settingsDialog QScrollBar::down-arrow:vertical,
+QDialog#settingsDialog QScrollBar::left-arrow:horizontal,
+QDialog#settingsDialog QScrollBar::right-arrow:horizontal {
+    width: 0px;
+    height: 0px;
+    border: none;
+    image: none;
+}
+QDialog#settingsDialog QScrollBar::sub-page,
+QDialog#settingsDialog QScrollBar::add-page,
+QDialog#settingsDialog QAbstractScrollArea::corner {
+    background: transparent;
+}
+
+QDialog#settingsDialog QGroupBox {
+    background-color: #FFFFFF;
+    border: 1px solid #E5E7EB;
+    border-radius: 6px;
+    margin-top: 12px;
+    padding: 10px;
+}
+QDialog#settingsDialog QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 10px;
+    padding: 0 5px;
+    color: #1F2937;
+    background-color: #FFFFFF;
+}
+QDialog#settingsDialog QTextEdit {
+    background-color: #FFFFFF;
+    border: 1px solid #D1D5DB;
+    border-radius: 6px;
+    padding: 5px 8px;
+    color: #1F2937;
+}
+QDialog#settingsDialog QTextEdit:focus {
+    border-color: #2563EB;
+}
+"""
+
+
 class SettingsDialog(QDialog):
     config_saved = None  # 由主窗口绑定
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.setObjectName("settingsDialog")
+        self.setStyleSheet(_SETTINGS_QSS)
         self.setWindowTitle("设置 - 影枢")
         self.resize(680, 620)
+        self.setMinimumSize(600, 460)
         self._mode_before = config_manager.project_mode
         self._build_ui()
         self._load()
@@ -55,11 +153,9 @@ class SettingsDialog(QDialog):
     def _build_ui(self):
         layout = QVBoxLayout(self)
         tabs = QTabWidget()
+        tabs.setObjectName("settingsTabs")
 
         # ═══════════════════ 通用 ═══════════════════
-        QWidget()
-        gen_scroll = QScrollArea()
-        gen_scroll.setWidgetResizable(True)
         gen_container = QWidget()
         gen_layout = QVBoxLayout(gen_container)
         gen_layout.setContentsMargins(16, 16, 16, 16)
@@ -109,8 +205,7 @@ class SettingsDialog(QDialog):
         gen_layout.addLayout(interval_row)
 
         gen_layout.addStretch(1)
-        gen_scroll.setWidget(gen_container)
-        tabs.addTab(gen_scroll, "通用")
+        tabs.addTab(self._create_page_scroll(gen_container), "通用")
 
         # ═══════════════════ 项目 ═══════════════════
         project_tab = QWidget()
@@ -190,7 +285,7 @@ class SettingsDialog(QDialog):
         proj_layout.addWidget(self.ignore_edit)
 
         proj_layout.addStretch(1)
-        tabs.addTab(project_tab, "项目")
+        tabs.addTab(self._create_page_scroll(project_tab), "项目")
 
         # ═══════════════════ 检测 ═══════════════════
         detect_tab = QWidget()
@@ -241,7 +336,7 @@ class SettingsDialog(QDialog):
         right_tabs.addTab(self.guide_text, "参数说明")
         det_layout.addWidget(right_tabs, 1)
 
-        tabs.addTab(detect_tab, "检测")
+        tabs.addTab(self._create_page_scroll(detect_tab), "检测")
 
         # ═══════════════════ 组件（FFmpeg） ═══════════════════
         comp_tab = QWidget()
@@ -250,10 +345,12 @@ class SettingsDialog(QDialog):
         comp_layout.setSpacing(10)
 
         comp_layout.addWidget(QLabel("FFmpeg 组件（视频质检引擎依赖）"))
-        comp_layout.addWidget(QLabel(
+        comp_description = QLabel(
             "软件已内置 FFmpeg（完整版），无需下载即可使用所有功能。"
             "如需更新或手动指定其他版本，可在此下载或指定目录。"
-        ))
+        )
+        comp_description.setWordWrap(True)
+        comp_layout.addWidget(comp_description)
 
         self.ff_status = QLabel("状态：检测中…")
         self.ff_status.setWordWrap(True)
@@ -277,17 +374,16 @@ class SettingsDialog(QDialog):
         comp_layout.addWidget(self.ff_url_edit)
 
         comp_layout.addSpacing(6)
-        comp_layout.addWidget(QLabel(
+        comp_hint = QLabel(
             "提示：若下载失败（网络受限），可点击「手动指定文件夹」，"
             "选择已解压、且内含 ffmpeg.exe / ffprobe.exe 的目录即可。"
-        ))
+        )
+        comp_hint.setWordWrap(True)
+        comp_layout.addWidget(comp_hint)
         comp_layout.addStretch(1)
-        tabs.addTab(comp_tab, "组件")
+        tabs.addTab(self._create_page_scroll(comp_tab), "组件")
 
         # ═══════════════════ 缓存 ═══════════════════
-        QWidget()
-        cache_scroll = QScrollArea()
-        cache_scroll.setWidgetResizable(True)
         cache_container = QWidget()
         cache_layout = QVBoxLayout(cache_container)
         cache_layout.setContentsMargins(16, 16, 16, 16)
@@ -299,9 +395,13 @@ class SettingsDialog(QDialog):
         # 缓存列表（每行：checkbox + 打开按钮）
         self._cache_rows: list[dict] = []
         self._cache_scroll = QScrollArea()
+        self._cache_scroll.setObjectName("cacheListScroll")
         self._cache_scroll.setWidgetResizable(True)
+        self._cache_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        self._cache_scroll.setLineWidth(0)
         self._cache_scroll.setMinimumHeight(180)
         self._cache_container = QWidget()
+        self._cache_container.setObjectName("cacheListContent")
         self._cache_vlayout = QVBoxLayout(self._cache_container)
         self._cache_vlayout.setContentsMargins(0, 0, 0, 0)
         self._cache_vlayout.setSpacing(4)
@@ -329,8 +429,7 @@ class SettingsDialog(QDialog):
         cache_layout.addWidget(self._cache_status)
 
         cache_layout.addStretch(1)
-        cache_scroll.setWidget(cache_container)
-        tabs.addTab(cache_scroll, "缓存")
+        tabs.addTab(self._create_page_scroll(cache_container), "缓存")
 
         layout.addWidget(tabs)
 
@@ -345,6 +444,19 @@ class SettingsDialog(QDialog):
         btn_layout.addWidget(self.ok_btn)
         btn_layout.addWidget(self.cancel_btn)
         layout.addLayout(btn_layout)
+
+    @staticmethod
+    def _create_page_scroll(widget: QWidget) -> QScrollArea:
+        """为每个顶层选项卡创建相同的无边框滚动容器。"""
+        widget.setObjectName("settingsPageContent")
+        scroll = QScrollArea()
+        scroll.setObjectName("settingsPageScroll")
+        scroll.setWidgetResizable(True)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        scroll.setLineWidth(0)
+        scroll.setWidget(widget)
+        return scroll
 
     def _load(self):
         mode = config_manager.project_mode

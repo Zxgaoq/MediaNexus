@@ -19,7 +19,7 @@ from core.adapters import create_default_registry
 from core.base_detector import DetectionContext
 from utils.config import ConfigManager, DEFAULT_THRESHOLDS
 
-logger = logging.getLogger("VideoQC.Engine")
+logger = logging.getLogger("MediaNexus.QC.Engine")
 
 
 class DetectionEngine:
@@ -87,7 +87,6 @@ class DetectionEngine:
             "filename": os.path.basename(filepath),
             "metadata": None,
             "black_frame": None,
-            "flash_frame": None,
             "black_border": None,
             "silence": None,
             "errors": [],

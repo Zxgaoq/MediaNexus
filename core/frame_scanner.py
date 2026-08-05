@@ -8,7 +8,7 @@ import cv2
 import numpy as np
 import logging
 
-logger = logging.getLogger("VideoQC.FrameScanner")
+logger = logging.getLogger("MediaNexus.QC.FrameScanner")
 
 
 class FrameScanner:

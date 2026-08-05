@@ -26,11 +26,12 @@ from MediaNexus import config_manager
 from MediaNexus import indexer
 from MediaNexus import matcher
 from utils.ffmpeg_manager import FFmpegManager
+from utils.storage_manager import StorageManager
 
 
 # --------------------------- 配置契约 ---------------------------
-def test_version_is_1_0_0():
-    assert constants.APP_VERSION == "1.0.0"
+def test_version_is_1_1_0():
+    assert constants.APP_VERSION == "1.1.0"
 
 
 def test_default_ignore_patterns_empty():
@@ -338,4 +339,32 @@ def test_ffmpeg_manual_dir_resolves():
             config_manager.ffmpeg_manual_dir = ""
         except Exception:
             pass
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
+# --------------------------- 存储管理 ---------------------------
+def test_storage_audio_cache_is_listed_and_clearable():
+    """音频提取缓存必须出现在缓存管理契约中，并可单独清理。"""
+    tmp = tempfile.mkdtemp()
+    try:
+        storage = object.__new__(StorageManager)
+        storage._initialized = True
+        storage._base_dir = tmp
+        storage._ensure_dirs()
+
+        audio_dir = os.path.join(tmp, "data", "cache", "audio")
+        os.makedirs(audio_dir)
+        payload = os.path.join(audio_dir, "sample_extracted.wav")
+        with open(payload, "wb") as f:
+            f.write(b"audio-cache")
+
+        info = storage.get_all_cache_info()
+        audio_item = next(item for item in info["items"] if item["id"] == "audio_cache")
+        assert audio_item["file_count"] == 1
+        assert audio_item["size_mb"] >= 0
+
+        result = storage.clear_all_caches({"audio_cache"})
+        assert not os.path.exists(payload)
+        assert result["errors"] == []
+    finally:
         shutil.rmtree(tmp, ignore_errors=True)

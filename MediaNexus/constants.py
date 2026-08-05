@@ -11,7 +11,7 @@ from pathlib import Path
 
 # ----------------------------- 应用元信息 -----------------------------
 APP_NAME = "影枢"
-APP_VERSION = "1.0.0"
+APP_VERSION = "1.1.0"
 
 # --------------------- SpinBox 箭头（运行时生成，兼容打包） ---------------------
 # PyInstaller onedir 模式下 Qt 样式表里的相对文件路径会失效，且 data: URI
@@ -263,12 +263,24 @@ QScrollBar::handle:vertical:hover { background: #9CA3AF; }
 QScrollBar:horizontal { background: transparent; height: 8px; }
 QScrollBar::handle:horizontal { background: #D1D5DB; border-radius: 4px; min-width: 30px; }
 QScrollBar::handle:horizontal:hover { background: #9CA3AF; }
+QScrollBar::sub-line:vertical, QScrollBar::add-line:vertical {
+    height: 0px; border: none; background: transparent;
+}
+QScrollBar::sub-line:horizontal, QScrollBar::add-line:horizontal {
+    width: 0px; border: none; background: transparent;
+}
+QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical,
+QScrollBar::left-arrow:horizontal, QScrollBar::right-arrow:horizontal {
+    width: 0px; height: 0px; border: none; image: none;
+}
+QScrollBar::sub-page, QScrollBar::add-page { background: transparent; }
+QAbstractScrollArea::corner { background: transparent; }
 
 /* ===== 分割器 ===== */
 QSplitter::handle { background: #E5E7EB; }
-QSplitter::handle:horizontal { width: 4px; }
-QSplitter::handle:vertical { height: 4px; }
-QSplitter::handle:hover { background: #93C5FD; }
+QSplitter::handle:horizontal { width: 1px; }
+QSplitter::handle:vertical { height: 1px; }
+QSplitter::handle:hover { background: #E5E7EB; }
 
 /* ===== 菜单栏 ===== */
 QMenuBar {
@@ -289,11 +301,11 @@ QMenuBar::item:pressed { background-color: #E5E7EB; }
 QMenu {
     background-color: #FFFFFF;
     border: 1px solid #E5E7EB;
-    border-radius: 8px;
-    padding: 4px;
+    border-radius: 0px;
+    padding: 0px;
     color: #1F2937;
 }
-QMenu::item { padding: 5px 24px 5px 12px; border-radius: 4px; }
+QMenu::item { padding: 5px 24px 5px 12px; border-radius: 0px; }
 QMenu::item:selected { background-color: #F3F4F6; }
 QMenu::separator { height: 1px; background: #F3F4F6; margin: 4px 8px; }
 

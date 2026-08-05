@@ -1,6 +1,6 @@
 """
 统一存储管理器
-确保程序所有衍生文件（日志、缓存、导出、预设备份）按规范目录结构存放，
+确保程序所有衍生文件（日志、缓存、导出）按规范目录结构存放，
 杜绝文件散落。提供缓存大小查询和一键清除功能。
 """
 
@@ -8,9 +8,8 @@ import os
 import sys
 import shutil
 import logging
-from datetime import datetime, timedelta
 
-logger = logging.getLogger("VideoQC.Storage")
+logger = logging.getLogger("MediaNexus.QC.Storage")
 
 
 class StorageManager:
@@ -57,10 +56,6 @@ class StorageManager:
         return os.path.join(self.data_dir, "exports")
 
     @property
-    def presets_backup_dir(self):
-        return os.path.join(self.data_dir, "presets_backup")
-
-    @property
     def config_path(self):
         return os.path.join(self._base_dir, "config.json")
 
@@ -69,7 +64,7 @@ class StorageManager:
     def _ensure_dirs(self):
         """确保所有必要的目录存在"""
         for d in [self.data_dir, self.logs_dir, self.cache_dir,
-                   self.exports_dir, self.presets_backup_dir]:
+                   self.exports_dir]:
             os.makedirs(d, exist_ok=True)
 
     # ---- 便捷路径 ----
@@ -84,162 +79,6 @@ class StorageManager:
             parent = os.path.dirname(path)
             os.makedirs(parent, exist_ok=True)
         return path
-
-    # ---- 缓存信息 ----
-
-    def get_cache_info(self):
-        """
-        获取缓存占用信息
-
-        Returns:
-            dict: {
-                "total_size_bytes": int,
-                "total_size_mb": float,
-                "log_count": int,
-                "log_size_mb": float,
-                "cache_file_count": int,
-                "cache_size_mb": float,
-                "breakdown": [{"path": str, "type": str, "size_mb": float}, ...]
-            }
-        """
-        info = {
-            "total_size_bytes": 0,
-            "total_size_mb": 0.0,
-            "log_count": 0,
-            "log_size_mb": 0.0,
-            "cache_file_count": 0,
-            "cache_size_mb": 0.0,
-            "breakdown": [],
-        }
-
-        # 统计日志
-        if os.path.isdir(self.logs_dir):
-            for entry in os.scandir(self.logs_dir):
-                if entry.is_file():
-                    try:
-                        size = entry.stat().st_size
-                        info["total_size_bytes"] += size
-                        info["log_count"] += 1
-                        info["log_size_mb"] += size / (1024 * 1024)
-                    except OSError:
-                        pass
-
-        # 统计缓存
-        cache_size = 0
-        cache_count = 0
-        if os.path.isdir(self.cache_dir):
-            for root, dirs, files in os.walk(self.cache_dir):
-                for f in files:
-                    try:
-                        fp = os.path.join(root, f)
-                        size = os.path.getsize(fp)
-                        cache_size += size
-                        cache_count += 1
-                        if len(info["breakdown"]) < 20:
-                            info["breakdown"].append({
-                                "path": fp,
-                                "type": "缓存",
-                                "size_mb": round(size / (1024 * 1024), 3),
-                            })
-                    except OSError:
-                        pass
-
-        info["total_size_bytes"] += cache_size
-        info["cache_file_count"] = cache_count
-        info["cache_size_mb"] = cache_size / (1024 * 1024)
-        info["total_size_mb"] = info["total_size_bytes"] / (1024 * 1024)
-
-        # 添加日志文件进入 breakdown
-        if os.path.isdir(self.logs_dir):
-            for entry in sorted(os.scandir(self.logs_dir), key=lambda e: e.name, reverse=True):
-                if entry.is_file() and len(info["breakdown"]) < 30:
-                    size_mb = entry.stat().st_size / (1024 * 1024)
-                    info["breakdown"].append({
-                        "path": entry.path,
-                        "type": "日志",
-                        "size_mb": round(size_mb, 3),
-                    })
-
-        return info
-
-    # ---- 清除缓存 ----
-
-    def clear_cache(self, keep_recent_logs=5, max_log_age_days=30):
-        """
-        清除所有缓存文件
-
-        Args:
-            keep_recent_logs: 保留最近的N个日志文件
-            max_log_age_days: 删除超过N天的日志
-
-        Returns:
-            dict: {"deleted_files": int, "deleted_dirs": int, "freed_mb": float, "errors": list}
-        """
-        result = {
-            "deleted_files": 0,
-            "deleted_dirs": 0,
-            "freed_mb": 0.0,
-            "errors": [],
-        }
-
-        # 1. 清空缓存目录的所有内容
-        if os.path.isdir(self.cache_dir):
-            for entry in os.listdir(self.cache_dir):
-                entry_path = os.path.join(self.cache_dir, entry)
-                try:
-                    if os.path.isfile(entry_path):
-                        size = os.path.getsize(entry_path)
-                        os.remove(entry_path)
-                        result["deleted_files"] += 1
-                        result["freed_mb"] += size / (1024 * 1024)
-                    elif os.path.isdir(entry_path):
-                        dir_size = self._dir_size(entry_path)
-                        shutil.rmtree(entry_path)
-                        result["deleted_dirs"] += 1
-                        result["deleted_files"] += 1
-                        result["freed_mb"] += dir_size / (1024 * 1024)
-                except OSError as e:
-                    result["errors"].append(f"删除缓存失败: {entry_path} ({e})")
-                    logger.warning(f"删除缓存失败: {entry_path}: {e}")
-
-        # 2. 清理旧日志（保留最近 N 个，删除超过 max_log_age_days 天的）
-        if os.path.isdir(self.logs_dir):
-            log_files = []
-            for entry in os.scandir(self.logs_dir):
-                if entry.is_file() and entry.name.endswith(".log"):
-                    try:
-                        stat = entry.stat()
-                        log_files.append((entry.path, stat.st_mtime, stat.st_size))
-                    except OSError:
-                        log_files.append((entry.path, 0, 0))
-
-            # 按修改时间排序（新的在前）
-            log_files.sort(key=lambda x: x[1], reverse=True)
-
-            cutoff_time = (datetime.now() - timedelta(days=max_log_age_days)).timestamp()
-
-            for i, (path, mtime, size) in enumerate(log_files):
-                should_delete = False
-                if i >= keep_recent_logs:
-                    should_delete = True  # 超出保留数量
-                if mtime > 0 and mtime < cutoff_time:
-                    should_delete = True  # 超过最大保存天数
-
-                if should_delete:
-                    try:
-                        os.remove(path)
-                        result["deleted_files"] += 1
-                        result["freed_mb"] += size / (1024 * 1024)
-                    except OSError as e:
-                        result["errors"].append(f"删除日志失败: {path} ({e})")
-                        logger.warning(f"删除日志失败: {path}: {e}")
-
-        result["freed_mb"] = round(result["freed_mb"], 2)
-        logger.info(
-            f"缓存清除完成: 删除 {result['deleted_files']} 个文件, "
-            f"{result['deleted_dirs']} 个目录, 释放 {result['freed_mb']:.1f} MB"
-        )
-        return result
 
     # ---- 全项目缓存管理 ----
 
@@ -266,7 +105,15 @@ class StorageManager:
         items.append({"id": "qc_cache", "name": "QC 检测结果缓存", "path": qc_path,
                        "size_mb": round(qc_mb, 2), "file_count": qc_count})
 
-        # 2. FFmpeg 下载缓存
+        # 2. 音频提取缓存
+        audio_mb, audio_count = 0.0, 0
+        audio_dir = self._get_audio_cache_dir()
+        if os.path.isdir(audio_dir):
+            audio_mb, audio_count = self._scan_dir(audio_dir)
+        items.append({"id": "audio_cache", "name": "音频提取缓存", "path": audio_dir,
+                       "size_mb": audio_mb, "file_count": audio_count})
+
+        # 3. FFmpeg 下载缓存
         ff_mb, ff_count = 0.0, 0
         ff_dir = self._get_ffmpeg_cache_dir()
         if os.path.isdir(ff_dir):
@@ -274,7 +121,7 @@ class StorageManager:
         items.append({"id": "ffmpeg_cache", "name": "FFmpeg 下载缓存", "path": ff_dir,
                        "size_mb": ff_mb, "file_count": ff_count})
 
-        # 3. 崩溃日志
+        # 4. 崩溃日志
         cr_mb, cr_count = 0.0, 0
         cr_path = self._get_crash_log_path()
         if os.path.isfile(cr_path):
@@ -286,14 +133,11 @@ class StorageManager:
         total = sum(it["size_mb"] for it in items)
         return {"total_mb": round(total, 2), "items": items}
 
-    def clear_all_caches(self, targets: set[str], keep_log_days: int = 30,
-                         keep_recent_logs: int = 5):
+    def clear_all_caches(self, targets: set[str]):
         """按用户选择清除缓存。
 
         Args:
-            targets: 要清除的缓存 ID 集合（如 {"qc_cache","ffmpeg_cache","crash_log"}）
-            keep_log_days: 日志保留天数
-            keep_recent_logs: 日志至少保留数量
+            targets: 要清除的缓存 ID 集合（如 {"qc_cache","audio_cache","ffmpeg_cache"}）
 
         Returns:
             dict: {"freed_mb": float, "errors": list[str]}
@@ -304,6 +148,8 @@ class StorageManager:
             try:
                 if tid == "qc_cache":
                     r = self._clear_file(self._get_qc_cache_path())
+                elif tid == "audio_cache":
+                    r = self._clear_dir(self._get_audio_cache_dir())
                 elif tid == "ffmpeg_cache":
                     r = self._clear_dir(self._get_ffmpeg_cache_dir())
                 elif tid == "crash_log":
@@ -381,6 +227,9 @@ class StorageManager:
             return str(CONFIG_DIR / "ffmpeg")
         except Exception:
             return os.path.join(os.environ.get("APPDATA", ""), "MediaNexus", "ffmpeg")
+
+    def _get_audio_cache_dir(self) -> str:
+        return os.path.join(self.cache_dir, "audio")
 
     def _get_crash_log_path(self) -> str:
         try:

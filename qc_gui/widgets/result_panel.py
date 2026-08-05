@@ -1,5 +1,5 @@
 """
-结果面板：检测结果树（文件名/状态/一致性/黑帧/夹帧跳帧/黑边/静音）
+结果面板：检测结果树（文件名/状态/一致性/黑帧/黑边/静音）
 """
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QTreeWidget, QHeaderView
 
@@ -19,7 +19,7 @@ class ResultPanel(QWidget):
         # 结果树
         self.result_tree = QTreeWidget()
         self.result_tree.setHeaderLabels([
-            "文件名", "状态", "一致性", "黑帧", "夹帧/跳帧", "黑边", "静音"
+            "文件名", "状态", "一致性", "黑帧", "黑边", "静音"
         ])
         self.result_tree.setAlternatingRowColors(True)
         self.result_tree.setRootIsDecorated(True)
@@ -31,7 +31,7 @@ class ResultPanel(QWidget):
         self.result_tree.setColumnWidth(1, 70)
         self.result_tree.setColumnWidth(2, 70)
         # 检测项列等宽
-        for col in range(3, 7):
+        for col in range(3, 6):
             self.result_tree.setColumnWidth(col, 50)
 
         # 最后一列自动拉伸
