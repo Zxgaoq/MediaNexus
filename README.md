@@ -119,7 +119,7 @@ python -m PyInstaller MediaNexus.spec --clean --noconfirm
 "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\MediaNexus-Setup.iss
 ```
 
-输出：`dist/installer/MediaNexus-Setup.exe`
+输出：`dist/installer/MediaNexus-Setup-1.1.0.exe`
 
 > 安装包不会删除 `%APPDATA%/MediaNexus` 下的用户配置。
 

@@ -4,7 +4,7 @@ REM ============================================================================
 REM  MediaNexus installer build script
 REM  Steps: 1) PyInstaller -> onedir bundle   2) Inno Setup -> setup wizard
 REM  Prereq: pip install -r requirements.txt  AND  Inno Setup 6 installed
-REM  Output: dist\installer\MediaNexus-Setup.exe
+REM  Output: dist\installer\MediaNexus-Setup-1.1.0.exe
 REM  Run this file from the project ROOT directory.
 REM ============================================================================
 
@@ -35,7 +35,7 @@ echo [2/2] Compiling installer with Inno Setup...
 "%INNO_DIR%\ISCC.exe" "installer\MediaNexus-Setup.iss"
 if !errorlevel! == 0 (
     echo.
-    echo [OK] Installer generated: dist\installer\MediaNexus-Setup.exe
+    echo [OK] Installer generated: dist\installer\MediaNexus-Setup-1.1.0.exe
     echo      Users can pick install location and toggle desktop/quick-launch icons.
 ) else (
     echo.

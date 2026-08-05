@@ -430,6 +430,8 @@ python -m PyInstaller MediaNexus.spec --clean --noconfirm
 & 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe' installer\MediaNexus-Setup.iss
 ```
 
+安装包输出文件名由 Inno Setup 的版本宏生成，例如 `dist/installer/MediaNexus-Setup-1.1.0.exe`。发布到 GitHub Release 时必须直接上传这个带 `.exe` 后缀的文件，不要上传无扩展名的重命名文件。
+
 安装脚本中出现 `MediaSync` 仅用于清理历史安装注册表项，不代表当前产品名或当前模块。
 
 ## 12. 测试和发布前检查

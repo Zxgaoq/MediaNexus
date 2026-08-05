@@ -4,7 +4,7 @@
 ; 用法（在项目根目录下，已先执行 PyInstaller 打包出 dist\MediaNexus.exe）：
 ;   "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\MediaNexus-Setup.iss
 ;
-; 产出：dist\installer\MediaNexus-Setup.exe
+; 产出：dist\installer\MediaNexus-Setup-1.1.0.exe
 ;
 ; 特性：
 ;   - 检测已有安装，自动切换为「更新」模式（提示用户、保留安装路径）
@@ -39,7 +39,7 @@ DisableProgramGroupPage=yes
 ; 允许不创建快捷方式（用户可在勾选时取消）
 AllowNoIcons=yes
 OutputDir={#SourceRoot}\dist\installer
-OutputBaseFilename=MediaNexus-Setup
+OutputBaseFilename=MediaNexus-Setup-{#MyAppVersion}
 SetupIconFile={#SourceRoot}\assets\logo.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
 Compression=lzma2/max
